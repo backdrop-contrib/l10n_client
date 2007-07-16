@@ -1,0 +1,138 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ *   Localization client. Provides on-page translation editing.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function l10n_client_menu() {
+  $items = array();
+  // AJAX callback path for strings.
+  $items['l10n_client/save'] = array(
+    'title' => 'Save string',
+    'page callback' => 'l10n_client_save_string',
+    'access arguments' => array('use on-page translation'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function l10n_client_perm() {
+  return array('use on-page translation');
+}
+
+/**
+ * Implementation of hook_init().
+ */
+function l10n_client_init() {
+  global $conf;
+  if (user_access('use on-page translation')) {
+    // Turn off the short string cache *in this request*, so we will
+    // have an accurate picture of strings used to assemble the page.
+    $conf['locale_cache_strings'] = 0;
+    drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css', 'module');
+    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
+    // We use textareas to be able to edit long text, which need resizing.
+    drupal_add_js('misc/textarea.js', 'module');
+  }
+}
+
+/**
+ * Implementation of hook_footer().
+ *
+ * Output a form to the page and a list of strings used to build
+ * the page in JSON form.
+ */
+function l10n_client_footer() {
+  global $conf, $language;
+  
+  if (user_access('use on-page translation')) {
+    // Get all strings used on the page.
+    $strings = locale();
+    
+    if (is_array($strings) && isset($strings[$language->language])) {
+      // If we have strings for the page language, restructure the data.
+      $l10n_strings = array();
+      foreach ($strings[$language->language] as $string => $translation) {
+        $l10n_strings[] = array($string, $translation);
+      }
+      // Include editing form on page.
+      $output = drupal_get_form('l10n_client_form', $l10n_strings);
+      // We need this hack as JS addition does not work this late on the page.
+      $output .= '<script type="text/javascript">Drupal.extend({ l10nStrings: '. drupal_to_js($l10n_strings) .' })</script>';
+      return $output;
+    }
+  }
+}
+
+/**
+ * String selection and editing form. Backed with jquery magic on the client.
+ *
+ * @todo
+ *   This form has nothing to do with different plural versions yet.
+ */
+function l10n_client_form($form_id, $strings) {
+  global $language;
+  
+  // Build a list of short string excerpts for the select list.
+  $select_list = array();
+  foreach ($strings as $values) {
+    // TRUE means we don't have translation, so we use the original string,
+    // so we always have the string displayed on the page in the dropdown.
+    $original = $values[1] == TRUE ? $values[0] : $values[1];
+    // Truncate and add ellipsis if too long.
+    $string = truncate_utf8($values[1] == TRUE ? $values[0] : $values[1], 78, TRUE);
+    $select_list[] = $string . ($original == $string ? '' : '...');
+  }
+  
+  // Selector and editing form.
+  $form = array();
+  $form['#action'] = url('l10n_client/save');
+   
+  $form['strings'] = array(
+    '#title' => t('Strings on this page'),
+    '#description' => t('Select a string to translate, which will be copied to the two edit fields below.'),
+    '#type' => 'select',
+    '#options' => $select_list
+  );
+  
+  $form['source'] = array(
+    '#title' => t('Source string'),
+    '#type' => 'textarea',
+    '#rows' => 2,
+  );
+  $form['target'] = array(
+    '#title' => t('Translation to %language', array('%language' => $language->native)),
+    '#type' => 'textarea',
+    '#rows' => 2,
+  );
+  $form['save'] = array(
+    '#value' => t('Save translation'),
+    '#type' => 'submit',
+  );
+  
+  return $form;
+}
+
+/**
+ * Menu callback. Saves a string translation coming as POST data.
+ */
+function l10n_client_save_string() {
+  global $language;
+  
+  if (user_access('use on-page translation')) {
+    if (isset($_POST['source']) && isset($_POST['target'])) {
+      include_once 'includes/locale.inc';
+      $report = array(0, 0, 0);
+      _locale_import_one_string_db($report, $language->language, $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
+      locale_refresh_cache();
+    }
+  }
+}
