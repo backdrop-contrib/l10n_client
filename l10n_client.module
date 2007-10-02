@@ -38,6 +38,9 @@ function l10n_client_init() {
     // have an accurate picture of strings used to assemble the page.
     $conf['locale_cache_strings'] = 0;
     drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css', 'module');
+    // Add jquery cookie plugin -- this should actually belong in 
+    // jstools (but hasn't been updated for HEAD)
+    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js', 'module');
@@ -63,59 +66,95 @@ function l10n_client_footer() {
       foreach ($strings[$language->language] as $string => $translation) {
         $l10n_strings[] = array($string, $translation);
       }
+      // Include string selector on page.
+      $string_list = _l10n_client_string_list($l10n_strings);
       // Include editing form on page.
-      $output = drupal_get_form('l10n_client_form', $l10n_strings);
+      $l10n_form = drupal_get_form('l10n_client_form', $l10n_strings);
+
       // We need this hack as JS addition does not work this late on the page.
-      $output .= '<script type="text/javascript">Drupal.extend({ l10nStrings: '. drupal_to_js($l10n_strings) .' })</script>';
+      $l10n_json = '<script type="text/javascript">jQuery.extend(Drupal, { l10nStrings: '. drupal_to_js($l10n_strings) .' });</script>';
+
+      // UI Labels
+      $string_label = '<h2>'.t('Page Text').'</h2>';
+      $source_label = '<h2>'.t('Source').'</h2>';
+      $translation_label = '<h2>'.t('Translation to %language', array('%language' => $language->native)).'</h2>';
+      $toggle_label = t('Translate Text');
+
+
+      $output = "
+        <div id='l10n-client' class='hidden'>
+          <div class='labels'>
+            <span class='toggle'>$toggle_label</span>
+            <div class='label strings'>$string_label</div>
+            <div class='label source'>$source_label</div>
+            <div class='label translation'>$translation_label</div>
+          </div>
+          <div id='l10n-client-string-select'>
+            $string_list
+          </div>
+          <div id='l10n-client-string-editor'>
+            <div class='source'>
+              <div class='source-text'></div>
+            </div>
+            <div class='translation'>
+              $l10n_form
+            </div>
+          </div>
+        </div>
+        $l10n_json
+      ";
+
       return $output;
     }
   }
 }
 
 /**
- * String selection and editing form. Backed with jquery magic on the client.
+ * String selection has been moved to a jquery-based item-list.
+ */
+function _l10n_client_string_list($strings) {
+  // Build a list of short string excerpts for a selectable list.
+  foreach ($strings as $values) {
+    // TRUE means we don't have translation, so we use the original string,
+    // so we always have the string displayed on the page in the dropdown.
+    $original = $values[1] == TRUE ? $values[0] : $values[1];
+    // Remove html tags, at least for display
+    $original = htmlentities($original);
+    // Truncate and add ellipsis if too long.
+    $string = strip_tags(truncate_utf8($values[1] == TRUE ? $values[0] : $values[1], 78, TRUE));
+    $select_list[] = $string . ($original == $string ? '' : '...');
+  }
+  return theme('item_list', $select_list, null, 'ul', array('class'=>'string-list'));
+}
+
+/**
+ * String editing form. Source & selection moved to UI components outside the form.
+ * Backed with jquery magic on the client.
  *
  * @todo
  *   This form has nothing to do with different plural versions yet.
  */
 function l10n_client_form($form_id, $strings) {
   global $language;
-  
-  // Build a list of short string excerpts for the select list.
-  $select_list = array();
-  foreach ($strings as $values) {
-    // TRUE means we don't have translation, so we use the original string,
-    // so we always have the string displayed on the page in the dropdown.
-    $original = $values[1] == TRUE ? $values[0] : $values[1];
-    // Truncate and add ellipsis if too long.
-    $string = truncate_utf8($values[1] == TRUE ? $values[0] : $values[1], 78, TRUE);
-    $select_list[] = $string . ($original == $string ? '' : '...');
-  }
-  
+
   // Selector and editing form.
   $form = array();
   $form['#action'] = url('l10n_client/save');
-   
-  $form['strings'] = array(
-    '#title' => t('Strings on this page'),
-    '#description' => t('Select a string to translate, which will be copied to the two edit fields below.'),
-    '#type' => 'select',
-    '#options' => $select_list
-  );
-  
-  $form['source'] = array(
-    '#title' => t('Source string'),
-    '#type' => 'textarea',
-    '#rows' => 2,
-  );
+
   $form['target'] = array(
-    '#title' => t('Translation to %language', array('%language' => $language->native)),
     '#type' => 'textarea',
-    '#rows' => 2,
+    '#resizable' => false,
+    '#rows' => 6,
   );
   $form['save'] = array(
     '#value' => t('Save translation'),
     '#type' => 'submit',
+  );
+  $form['copy'] = array(
+    '#value' => "<input id='edit-copy' class='form-submit' type='button' value='".t('Copy Source')."'/>",
+  );
+  $form['clear'] = array(
+    '#value' => "<input id='edit-clear' class='form-submit' type='button' value='".t('Clear')."'/>",
   );
   
   return $form;

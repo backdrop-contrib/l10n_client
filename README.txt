@@ -39,5 +39,6 @@ translations to your local database.
 CONTRIBUTORS
 --------------------------------------------------------------------------------
 G‡bor Hojtsy http://drupal.org/user/4166 (original author)
+Young Hahn / Development Seed - http://developmentseed.org/ (friendly user interface)
 
 Initial development of this module was sponsored by Google Summer of Code 2007.
