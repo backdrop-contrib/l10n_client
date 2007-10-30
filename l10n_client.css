@@ -1,3 +1,7 @@
+/* width percentages add to 99% rather than 100% to prevent float
+overflows from occurring in an unnamed browser that can't decide
+how it wants to round. */
+
 /* l10n_client container */
 #l10n-client {
   text-align:left;
@@ -18,6 +22,7 @@
   height:20em;}
 
 #l10n-client .labels {
+  overflow:hidden;
   position:relative;
   height:2em;
   color:#fff;
@@ -46,7 +51,7 @@
     #l10n-client .strings h2 {
       border:0px;}
 
-  /* 25 + 37 + 38 = 100 */
+  /* 25 + 37 + 37 = 99 */
   #l10n-client .strings {
     width:25%; float:left;} 
 
@@ -54,7 +59,7 @@
     width:37%; float:left;} 
 
   #l10n-client .translation {
-    width:38%; float:left;} 
+    width:37%; float:left;} 
 
 /* Translatable string list */
 #l10n-client-string-select {
@@ -63,12 +68,13 @@
   width:25%;}
 
   #l10n-client .string-list {
-    height:19em;
+    height:17em;
     overflow:auto;
     list-style:none; list-style-image:none;
     margin:0em; padding:0em;}
   
   #l10n-client .string-list li {
+    font-size:.9em;
     line-height:1.5em;
     cursor:default;
     background:transparent;
@@ -88,6 +94,9 @@
     #l10n-client .string-list li.translated:active {
       background: #9c3;}
 
+  #l10n-client .string-list li.hidden {
+    display:none;}
+
   /* Gray + Blue hover for untranslated */
   #l10n-client .string-list li.untranslated {}
   
@@ -101,10 +110,40 @@
   #l10n-client .string-list li.active {
     font-weight:bold;}
 
+  #l10n-client #l10n-client-search {
+    background:#eee;
+    text-align:center;
+    height:2em; line-height:2em;
+    margin:0em; padding:.5em .5em;
+  }
+
+  #l10n-client #l10n-client-search .form-item,
+  #l10n-client #l10n-client-search input.form-text,
+  #l10n-client #l10n-client-search #search-filter-go,
+  #l10n-client #l10n-client-search #search-filter-clear {
+    display:inline;
+    vertical-align:middle;
+  }
+  
+    #l10n-client #l10n-client-search .form-item {
+      margin:0em;
+      padding:0em;
+    }
+  
+    #l10n-client #l10n-client-search input.form-text {
+      width:80%;
+    }
+  
+    #l10n-client #l10n-client-search #search-filter-clear {
+      width:10%;
+      margin:0em;
+    }
+
+
 #l10n-client-string-editor {
   display:none;
-  float:right;
-  width:75%;}
+  float:left;
+  width:74%;}
 
   #l10n-client-string-editor .source {
     overflow:hidden;
@@ -118,7 +157,7 @@
   
   #l10n-client-string-editor .translation {
     overflow:hidden;
-    width:50%; float:right;}
+    width:49%; float:right;}
 
 #l10n-client-form {
   padding:0em;}
@@ -130,3 +169,7 @@
   
   #l10n-client-form .form-submit {
     margin-top: 0em;}
+
+
+#l10n-client-data {
+  display:none;}

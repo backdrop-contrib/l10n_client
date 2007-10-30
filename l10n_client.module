@@ -40,6 +40,7 @@ function l10n_client_init() {
     drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css', 'module');
     // Add jquery cookie plugin -- this should actually belong in 
     // jstools (but hasn't been updated for HEAD)
+    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
     // We use textareas to be able to edit long text, which need resizing.
@@ -66,13 +67,17 @@ function l10n_client_footer() {
       foreach ($strings[$language->language] as $string => $translation) {
         $l10n_strings[] = array($string, $translation);
       }
+      array_multisort($l10n_strings);
       // Include string selector on page.
       $string_list = _l10n_client_string_list($l10n_strings);
       // Include editing form on page.
       $l10n_form = drupal_get_form('l10n_client_form', $l10n_strings);
+      // Include search form on page.
+      $l10n_search = drupal_get_form('l10n_client_search');
 
       // We need this hack as JS addition does not work this late on the page.
-      $l10n_json = '<script type="text/javascript">jQuery.extend(Drupal, { l10nStrings: '. drupal_to_js($l10n_strings) .' });</script>';
+      //$l10n_json = '<script type="text/javascript">jQuery.extend(Drupal, { l10nStrings: '. drupal_to_js($l10n_strings) .' });</script>';   
+      $l10n_dom = _l10n_client_dom_strings($l10n_strings);
 
       // UI Labels
       $string_label = '<h2>'.t('Page Text').'</h2>';
@@ -91,6 +96,7 @@ function l10n_client_footer() {
           </div>
           <div id='l10n-client-string-select'>
             $string_list
+            $l10n_search
           </div>
           <div id='l10n-client-string-editor'>
             <div class='source'>
@@ -101,7 +107,7 @@ function l10n_client_footer() {
             </div>
           </div>
         </div>
-        $l10n_json
+        $l10n_dom
       ";
 
       return $output;
@@ -110,21 +116,43 @@ function l10n_client_footer() {
 }
 
 /**
- * String selection has been moved to a jquery-based item-list.
+ * Helper function for the string list DOM tree
+ */
+function _l10n_client_dom_strings($strings) {
+  $output = '';
+  foreach($strings as $values) {
+    $source = $values[0] === TRUE ? '' : $values[0];
+    $target = $values[1] === TRUE ? '' : $values[1];
+    $output .= "<div><span class='source'>$source</span><span class='target'>$target</span></div>";
+  }
+  return "<div id='l10n-client-data'>$output</div>";
+}
+
+/**
+ * String selection has been moved to a jquery-based list.
+ * Todo: make this a themeable function.
  */
 function _l10n_client_string_list($strings) {
   // Build a list of short string excerpts for a selectable list.
   foreach ($strings as $values) {
+    // Add a class to help identify translated strings
+    if ($values[1] === TRUE) {
+      $str_class = 'untranslated';
+    }
+    else {
+      $str_class = 'translated';
+    }
     // TRUE means we don't have translation, so we use the original string,
     // so we always have the string displayed on the page in the dropdown.
-    $original = $values[1] == TRUE ? $values[0] : $values[1];
+    $original = $values[1] === TRUE ? $values[0] : $values[1];
     // Remove html tags, at least for display
-    $original = htmlentities($original);
+    $original = strip_tags($original);
     // Truncate and add ellipsis if too long.
-    $string = strip_tags(truncate_utf8($values[1] == TRUE ? $values[0] : $values[1], 78, TRUE));
-    $select_list[] = $string . ($original == $string ? '' : '...');
+    $string = truncate_utf8($original, 78, TRUE);
+    $select_list[] = "<li class='$str_class'>" . $string . ($original == $string ? '' : '...') . "</li>";
   }
-  return theme('item_list', $select_list, null, 'ul', array('class'=>'string-list'));
+  $output = implode("\n",$select_list);
+  return "<ul class='string-list'>$output</ul>";
 }
 
 /**
@@ -157,6 +185,22 @@ function l10n_client_form($form_id, $strings) {
     '#value' => "<input id='edit-clear' class='form-submit' type='button' value='".t('Clear')."'/>",
   );
   
+  return $form;
+}
+
+/**
+ * Search form for string list
+ */
+function l10n_client_search() {
+  global $language;
+  // Selector and editing form.
+  $form = array();
+  $form['search'] = array(
+    '#type' => 'textfield',
+  );
+  $form['clear-button'] = array(
+    '#value' => "<input id='search-filter-clear' class='form-submit' type='button' value='".t('X')."'/>",
+  );
   return $form;
 }
 
