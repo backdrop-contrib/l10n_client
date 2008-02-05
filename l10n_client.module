@@ -18,6 +18,22 @@ function l10n_client_menu() {
     'access arguments' => array('use on-page translation'),
     'type' => MENU_CALLBACK,
   );
+  // Direct copy of the import tab from locale module to
+  // make space for the "Reimport package" tab below.
+  $items['admin/build/translate/import/file'] = array(
+    'title' => 'Import file',
+    'page callback' => 'locale_inc_callback',
+    'page arguments' => array('drupal_get_form', 'locale_translate_import_form'),
+    'weight' => -5,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/build/translate/import/package'] = array(
+    'title' => 'Reimport package',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('l10n_client_import_package_form'),
+    'weight' => 5,
+    'type' => MENU_LOCAL_TASK,
+  );
   return $items;
 }
 
@@ -218,4 +234,65 @@ function l10n_client_save_string() {
       locale_refresh_cache();
     }
   }
+}
+
+// -----------------------------------------------------------------------------
+
+/**
+ * Page callback function to present a form to reimport a translation package.
+ *
+ * @ingroup forms
+ * @see l10n_client_import_package_form_submit()
+ */
+function l10n_client_import_package_form(&$form_state) {
+  // Get all languages, except English
+  $names = locale_language_list('name', TRUE);
+  unset($names['en']);
+
+  if (!count($names)) {
+    // This only works if there is any foreign language set up.
+    drupal_set_message(t('No languages set up to reimport packages into.', 'warning'));
+    return array();
+  }
+  
+  $form = array();
+  $form['reimport'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Reimport translation package'),
+  );
+  $form['reimport']['langcode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Language package'),
+    '#options' => $names,
+    '#default_value' => array_shift(array_keys($names)),
+    '#description' => t('Choose a language package to reimport translations from. All files of the package should be already uncompressed to the Drupal directories. All translation files will be imported for enabled modules and themes and will be imported to the built in interface textgroup.'),
+  );
+  $form['reimport']['cleanup'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Clean up database before reimport'),
+    '#description' => t('If checked, all translations for the given language will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution.')
+  );
+  $form['reimport']['submit'] = array('#type' => 'submit', '#value' => t('Reimport package'));
+  return $form;
+}
+
+/**
+ * Submission handler for package reimport form.
+ *
+ * @see l10n_client_import_package_form()
+ */
+function l10n_client_import_package_form_submit($form, &$form_state) {
+  if (!empty($form_state['values']['cleanup'])) {
+    // Clean out all translations first if user asked to do that.
+    db_query("DELETE FROM {locales_target} WHERE language = '%s'", $form_state['values']['langcode']);
+    // Also remove all source strings without translations.
+    db_query("DELETE FROM {locales_source} WHERE lid NOT IN (SELECT lid FROM {locales_target})");
+  }
+  
+  // Set up and start batch for new imports.
+  include_once 'includes/locale.inc';
+  if ($batch = locale_batch_by_language($form_state['values']['langcode'], '_locale_batch_language_finished')) {
+    batch_set($batch);
+  }
+  $form_state['redirect'] = 'admin/build/translate';
 }
