@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: German translation for l10n_client\n"
 "POT-Creation-Date: 2008-02-03 14:33+0100\n"
-"PO-Revision-Date: 2008-02-03 14:43+0100\n"
+"PO-Revision-Date: 2008-02-06 08:54+0100\n"
 "Last-Translator: Alexander Hass\n"
 "Language-Team: Alexander Haß\n"
 "MIME-Version: 1.0\n"
@@ -21,41 +21,77 @@ msgstr ""
 "X-Poedit-Language: German\n"
 "X-Poedit-Country: GERMANY\n"
 
-#: l10n_client.module:78
+#: l10n_client.module:99
 msgid "Page Text"
 msgstr "Seitentext"
 
-#: l10n_client.module:79
+#: l10n_client.module:100
 msgid "Source"
 msgstr "Quelltext"
 
-#: l10n_client.module:80
+#: l10n_client.module:101
 msgid "Translation to %language"
 msgstr "Übersetzung nach %language"
 
-#: l10n_client.module:81
+#: l10n_client.module:102
 msgid "Translate Text"
 msgstr "Text übersetzen"
 
-#: l10n_client.module:150
+#: l10n_client.module:194
 msgid "Save translation"
 msgstr "Übersetzung speichern"
 
-#: l10n_client.module:154
+#: l10n_client.module:198
 msgid "Copy Source"
 msgstr "Quelltext kopieren"
 
-#: l10n_client.module:157
+#: l10n_client.module:201
 msgid "Clear"
 msgstr "Leeren"
 
-#: l10n_client.module:28
+#: l10n_client.module:218
+msgid "X"
+msgstr "X"
+
+#: l10n_client.module:254
+msgid "No languages set up to reimport packages into."
+msgstr "Keine Sprachen zum wiederholten Importieren konfiguriert."
+
+#: l10n_client.module:261
+msgid "Reimport translation package"
+msgstr "Sprachpaket neu importieren"
+
+#: l10n_client.module:265
+msgid "Language package"
+msgstr "Sprachpaket"
+
+#: l10n_client.module:268
+msgid "Choose a language package to reimport translations from. All files of the package should be already uncompressed to the Drupal directories. All translation files will be imported for enabled modules and themes and will be imported to the built in interface textgroup."
+msgstr "Ein Sprachpaket auswählen aus dem Übersetzungen wiederholt importiert werden sollen. Alle Dateien von diesem Paket sollten sich unkomprimiert in den Drupal Verzeichnissen befinden. Alle Übersetzungdateien für aktivierte Module und Themes werden in die eingebaute Übersetzungsoberfläche importiert."
+
+#: l10n_client.module:272
+msgid "Clean up database before reimport"
+msgstr "Datenbank vor dem wiederholten Import bereinigen."
+
+#: l10n_client.module:273
+msgid "If checked, all translations for the given language will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution."
+msgstr "Sobald aktiviert, werden alle Übersetzungen der angegebenen Sprache zuerst aus der Datenbank gelöscht, alle angepassten und in den zu importierenden Dateien nicht vorhandenen Übersetzungen gehen dabei verloren. Die Verwendung sollte nur mit großer Vorsicht geschehen."
+
+#: l10n_client.module:275;31
+msgid "Reimport package"
+msgstr "Paket wiederholt importieren"
+
+#: l10n_client.module:44
 msgid "use on-page translation"
 msgstr "Übersetzung innerhalb der Seite verwenden"
 
 #: l10n_client.module:16
 msgid "Save string"
 msgstr "Zeichenkette speichern"
+
+#: l10n_client.module:24
+msgid "Import file"
+msgstr "Importdate"
 
 #: l10n_client.module:0
 msgid "l10n_client"
