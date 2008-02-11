@@ -49,7 +49,7 @@ jQuery.extend(Drupal, {
         case 0:
           $('#l10n-client-string-select, #l10n-client-string-editor, #l10n-client .labels .label').hide();
           $('#l10n-client').height('2em').addClass('hidden');
-          $('#l10n-client .labels .toggle').text('Translate Text');
+          $('#l10n-client .labels .toggle').text(Drupal.t('Translate Text'));
           if(!$.browser.msie) {
             $('body').css('border-bottom', '0px');
           }
