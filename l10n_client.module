@@ -96,9 +96,9 @@ function l10n_client_footer() {
       $l10n_dom = _l10n_client_dom_strings($l10n_strings);
 
       // UI Labels
-      $string_label = '<h2>'.t('Page Text').'</h2>';
-      $source_label = '<h2>'.t('Source').'</h2>';
-      $translation_label = '<h2>'.t('Translation to %language', array('%language' => $language->native)).'</h2>';
+      $string_label = '<h2>'. t('Page Text') .'</h2>';
+      $source_label = '<h2>'. t('Source') .'</h2>';
+      $translation_label = '<h2>'. t('Translation to %language', array('%language' => $language->native)) .'</h2>';
       $toggle_label = t('Translate Text');
 
 
@@ -136,7 +136,7 @@ function l10n_client_footer() {
  */
 function _l10n_client_dom_strings($strings) {
   $output = '';
-  foreach($strings as $values) {
+  foreach ($strings as $values) {
     $source = $values[0] === TRUE ? '' : $values[0];
     $target = $values[1] === TRUE ? '' : $values[1];
     $output .= "<div><span class='source'>$source</span><span class='target'>$target</span></div>";
@@ -165,9 +165,9 @@ function _l10n_client_string_list($strings) {
     $original = strip_tags($original);
     // Truncate and add ellipsis if too long.
     $string = truncate_utf8($original, 78, TRUE);
-    $select_list[] = "<li class='$str_class'>" . $string . ($original == $string ? '' : '...') . "</li>";
+    $select_list[] = "<li class='$str_class'>". $string . ($original == $string ? '' : '...') .'</li>';
   }
-  $output = implode("\n",$select_list);
+  $output = implode("\n", $select_list);
   return "<ul class='string-list'>$output</ul>";
 }
 
@@ -195,10 +195,10 @@ function l10n_client_form($form_id, $strings) {
     '#type' => 'submit',
   );
   $form['copy'] = array(
-    '#value' => "<input id='edit-copy' class='form-submit' type='button' value='".t('Copy Source')."'/>",
+    '#value' => "<input id='edit-copy' class='form-submit' type='button' value='". t('Copy Source') ."'/>",
   );
   $form['clear'] = array(
-    '#value' => "<input id='edit-clear' class='form-submit' type='button' value='".t('Clear')."'/>",
+    '#value' => "<input id='edit-clear' class='form-submit' type='button' value='". t('Clear') ."'/>",
   );
   
   return $form;
@@ -215,7 +215,7 @@ function l10n_client_search() {
     '#type' => 'textfield',
   );
   $form['clear-button'] = array(
-    '#value' => "<input id='search-filter-clear' class='form-submit' type='button' value='".t('X')."'/>",
+    '#value' => "<input id='search-filter-clear' class='form-submit' type='button' value='". t('X') ."'/>",
   );
   return $form;
 }
