@@ -231,7 +231,7 @@ function l10n_client_save_string() {
       include_once 'includes/locale.inc';
       $report = array(0, 0, 0);
       _locale_import_one_string_db($report, $language->language, $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
-      locale_refresh_cache();
+      cache_clear_all('locale:', 'cache', TRUE);
     }
   }
 }
