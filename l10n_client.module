@@ -89,7 +89,7 @@ function l10n_client_footer() {
       // Include editing form on page.
       $l10n_form = drupal_get_form('l10n_client_form', $l10n_strings);
       // Include search form on page.
-      $l10n_search = drupal_get_form('l10n_client_search');
+      $l10n_search = drupal_get_form('l10n_client_search_form');
 
       // We need this hack as JS addition does not work this late on the page.
       //$l10n_json = '<script type="text/javascript">jQuery.extend(Drupal, { l10nStrings: '. drupal_to_js($l10n_strings) .' });</script>';   
@@ -207,7 +207,7 @@ function l10n_client_form($form_id, $strings) {
 /**
  * Search form for string list
  */
-function l10n_client_search() {
+function l10n_client_search_form() {
   global $language;
   // Selector and editing form.
   $form = array();
