@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: German translation for l10n_client\n"
 "POT-Creation-Date: 2008-02-03 14:33+0100\n"
-"PO-Revision-Date: 2008-02-06 08:54+0100\n"
+"PO-Revision-Date: 2008-02-15 09:32+0100\n"
 "Last-Translator: Alexander Hass\n"
 "Language-Team: Alexander Haß\n"
 "MIME-Version: 1.0\n"
@@ -55,7 +55,7 @@ msgstr "X"
 
 #: l10n_client.module:254
 msgid "No languages set up to reimport packages into."
-msgstr "Keine Sprachen zum wiederholten Importieren konfiguriert."
+msgstr "Keine Sprachen zum erneuten Importieren konfiguriert."
 
 #: l10n_client.module:261
 msgid "Reimport translation package"
@@ -67,11 +67,11 @@ msgstr "Sprachpaket"
 
 #: l10n_client.module:268
 msgid "Choose a language package to reimport translations from. All files of the package should be already uncompressed to the Drupal directories. All translation files will be imported for enabled modules and themes and will be imported to the built in interface textgroup."
-msgstr "Ein Sprachpaket auswählen aus dem Übersetzungen wiederholt importiert werden sollen. Alle Dateien von diesem Paket sollten sich unkomprimiert in den Drupal Verzeichnissen befinden. Alle Übersetzungdateien für aktivierte Module und Themes werden in die eingebaute Übersetzungsoberfläche importiert."
+msgstr "Ein Sprachpaket auswählen aus dem Übersetzungen erneut importiert werden sollen. Alle Dateien von diesem Paket sollten sich unkomprimiert in den Drupal Verzeichnissen befinden. Alle Übersetzungdateien für aktivierte Module und Themes werden in die eingebaute Übersetzungsoberfläche importiert."
 
 #: l10n_client.module:272
 msgid "Clean up database before reimport"
-msgstr "Datenbank vor dem wiederholten Import bereinigen."
+msgstr "Datenbank vor dem erneuten Import bereinigen."
 
 #: l10n_client.module:273
 msgid "If checked, all translations for the given language will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution."
@@ -79,7 +79,7 @@ msgstr "Sobald aktiviert, werden alle Übersetzungen der angegebenen Sprache zue
 
 #: l10n_client.module:275;31
 msgid "Reimport package"
-msgstr "Paket wiederholt importieren"
+msgstr "Paket erneut importieren"
 
 #: l10n_client.module:44
 msgid "use on-page translation"
