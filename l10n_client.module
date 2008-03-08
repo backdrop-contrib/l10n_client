@@ -18,6 +18,7 @@ function l10n_client_menu() {
     'access arguments' => array('use on-page translation'),
     'type' => MENU_CALLBACK,
   );
+
   // Direct copy of the import tab from locale module to
   // make space for the "Reimport package" tab below.
   $items['admin/build/translate/import/file'] = array(
@@ -31,6 +32,23 @@ function l10n_client_menu() {
     'title' => 'Reimport package',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('l10n_client_import_package_form'),
+    'weight' => 5,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  // Direct copy of the Configure tab from locale module to
+  // make space for the "Localization sharing" tab below.
+  $items['admin/settings/language/configure/language'] = array(
+    'title' => 'Language negotiation',
+    'page callback' => 'locale_inc_callback',
+    'page arguments' => array('drupal_get_form', 'locale_languages_configure_form'),
+    'weight' => -10,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/settings/language/configure/l10n_client'] = array(
+    'title' => 'Localization sharing',  
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('l10n_client_settings_form'),
     'weight' => 5,
     'type' => MENU_LOCAL_TASK,
   );
@@ -48,7 +66,8 @@ function l10n_client_perm() {
  * Implementation of hook_init().
  */
 function l10n_client_init() {
-  global $conf;
+  global $conf, $language;
+  
   if (user_access('use on-page translation')) {
     // Turn off the short string cache *in this request*, so we will
     // have an accurate picture of strings used to assemble the page.
@@ -59,6 +78,9 @@ function l10n_client_init() {
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
+    // Add server address if we have a server set up. Otherwise add empty string.
+    $server = variable_get('l10n_client_server', '');
+    drupal_add_js(array('l10n_client_server' => $server ? $server .'/translate/remote/'. $language->language : ''), 'setting');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js', 'module');
   }
@@ -295,4 +317,22 @@ function l10n_client_import_package_form_submit($form, &$form_state) {
     batch_set($batch);
   }
   $form_state['redirect'] = 'admin/build/translate';
+}
+
+// -----------------------------------------------------------------------------
+
+/**
+ * Settings form for l10n_client.
+ *
+ * Enable users to set up a central server to share translations with.
+ */
+function l10n_client_settings_form() {
+  $form = array();
+  $form['l10n_client_server'] = array(
+    '#title' => t('Share translations with server'),
+    '#type' => 'textfield',
+    '#description' => t('Address of localization server to use. The server will be used to share translations submitted through the localization client interface. Each local submission will result in a call to this server as well. To be able to submit a translation there, you should be logged in there, but from then on, everything is automated. A list of servers you can use is available from the <a href="@project">Localization server project page</a>.', array('@project' => 'http://drupal.org/project/l10n_server')),
+    '#default_value' => variable_get('l10n_client_server', ''),
+  );
+  return system_settings_form($form);
 }

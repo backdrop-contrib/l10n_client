@@ -83,7 +83,7 @@ jQuery.extend(Drupal, {
   })
 });
 
-// Attaches the localization editor behaviour to all required fields.
+// Attaches the localization editor behavior to all required fields.
 Drupal.behaviors.l10nClient = function (context) {
 
   switch($.cookie('Drupal_l10n_client')) {
@@ -143,6 +143,9 @@ Drupal.behaviors.l10nClient = function (context) {
     Drupal.l10nClient.filter(false);
   });
 
+  // Add iframe for form submissions going to an l10n_server.
+  $('body').append('<iframe id="toL10nServer"></iframe>');
+
   // Send AJAX POST data on form submit.
   $('#l10n-client-form').submit(function() {
     $.ajax({
@@ -167,6 +170,12 @@ Drupal.behaviors.l10nClient = function (context) {
         alert(Drupal.t('An HTTP error @status occured.', { '@status': xmlhttp.status }));
       }
     });
+    
+    // A little hack to get a form submitted to the third-party l10n_server.
+    $(document.createElement('FORM')).attr('action', Drupal.settings.l10n_client_server).attr('method', 'POST').attr('target', 'toL10nServer').html(
+      '<textarea name="source">'+ Drupal.checkPlain($('#l10n-client-string-editor .source-text').text()) +'</textarea>'+
+      '<textarea name="target">'+ Drupal.checkPlain($('#l10n-client-form #edit-target').val()) +'</textarea>'
+    ).submit();
     return false;
   });
   
