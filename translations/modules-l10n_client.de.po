@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: German translation for l10n_client\n"
 "POT-Creation-Date: 2008-02-03 14:33+0100\n"
-"PO-Revision-Date: 2008-02-15 09:32+0100\n"
+"PO-Revision-Date: 2008-03-10 22:15+0100\n"
 "Last-Translator: Alexander Hass\n"
 "Language-Team: Alexander Haß\n"
 "MIME-Version: 1.0\n"
@@ -91,7 +91,7 @@ msgstr "Zeichenkette speichern"
 
 #: l10n_client.module:24
 msgid "Import file"
-msgstr "Importdate"
+msgstr "Datei importieren"
 
 #: l10n_client.module:0
 msgid "l10n_client"
