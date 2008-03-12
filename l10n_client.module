@@ -336,3 +336,19 @@ function l10n_client_settings_form() {
   );
   return system_settings_form($form);
 }
+
+/**
+ * Validation to make sure the provided server can handle our submissions.
+ *
+ * Make sure it supports the exact version of the API we will try to use.
+ */
+function l10n_client_settings_form_validate($form, &$form_state) {
+  // Try to invoke the remote string submission with a test request.
+  $response = drupal_http_request($form_state['values']['l10n_client_server'] .'/translate/remote/1.0/test');
+  if (!preg_match('!^<\!-- v1\.0 Localization community!', $response->data)) {
+    form_set_error('l10n_client_server', t('Invalid localization server address specified, or the given server could not handle the v1.0 remote submission API. Make sure you specified the right server address.'));
+  }
+  else {
+    drupal_set_message(t('Verified that the specified server can handle remote string submissions.'));
+  }
+}
