@@ -80,7 +80,7 @@ function l10n_client_init() {
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
     // Add server address if we have a server set up. Otherwise add empty string.
     $server = variable_get('l10n_client_server', '');
-    drupal_add_js(array('l10n_client_server' => $server ? $server .'/translate/remote/'. $language->language : ''), 'setting');
+    drupal_add_js(array('l10n_client_server' => $server ? $server .'/translate/remote/1.0/'. $language->language : ''), 'setting');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js', 'module');
   }
