@@ -144,7 +144,7 @@ Drupal.behaviors.l10nClient = function (context) {
   });
 
   // Add iframe for form submissions going to an l10n_server.
-  $('body').append('<iframe id="toL10nServer"></iframe>');
+  $('body').append('<iframe id="toL10nServer" style="display:none;"></iframe>');
 
   // Send AJAX POST data on form submit.
   $('#l10n-client-form').submit(function() {
