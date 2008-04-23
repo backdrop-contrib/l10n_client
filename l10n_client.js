@@ -144,7 +144,8 @@ Drupal.behaviors.l10nClient = function (context) {
   });
 
   // Add iframe for form submissions going to an l10n_server.
-  $('body').append('<iframe id="toL10nServer" style="display:none;"></iframe>');
+  $('body').append('<form id="formToL10nServer" style="display:none;"></form>');
+  $('body').append('<iframe name="toL10nServer" style="display:none;"></iframe>');
 
   // Send AJAX POST data on form submit.
   $('#l10n-client-form').submit(function() {
@@ -172,7 +173,7 @@ Drupal.behaviors.l10nClient = function (context) {
     });
     
     // A little hack to get a form submitted to the third-party l10n_server.
-    $(document.createElement('FORM')).attr('action', Drupal.settings.l10n_client_server).attr('method', 'POST').attr('target', 'toL10nServer').html(
+    $('#formToL10nServer').attr('action', Drupal.settings.l10n_client_server).attr('method', 'POST').attr('target', 'toL10nServer').html(
       '<textarea name="source">'+ Drupal.checkPlain($('#l10n-client-string-editor .source-text').text()) +'</textarea>'+
       '<textarea name="target">'+ Drupal.checkPlain($('#l10n-client-form #edit-target').val()) +'</textarea>'
     ).submit();
