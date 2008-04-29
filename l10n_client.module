@@ -83,8 +83,7 @@ function l10n_client_init() {
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
     // Add server address if we have a server set up. Otherwise add empty string.
-    $server = variable_get('l10n_client_server', '');
-    drupal_add_js(array('l10n_client_server' => $server ? $server .'/translate/remote/1.0/'. $language->language : ''), 'setting');
+    drupal_add_js(array('l10n_client_server' => variable_get('l10n_client_use_server', 0) ? variable_get('l10n_client_server', '') .'/translate/remote/1.0/'. $language->language : ''), 'setting');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js', 'module');
   }
@@ -332,10 +331,15 @@ function l10n_client_import_package_form_submit($form, &$form_state) {
  */
 function l10n_client_settings_form() {
   $form = array();
+  $form['l10n_client_use_server'] = array(
+    '#title' => t('Enable sharing translations with server'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('l10n_client_use_server', 0),
+  );
   $form['l10n_client_server'] = array(
-    '#title' => t('Share translations with server'),
+    '#title' => t('Address of localization server to use'),
     '#type' => 'textfield',
-    '#description' => t('Address of localization server to use. The server will be used to share translations submitted through the localization client interface. Each local submission will result in a call to this server as well. To be able to submit a translation there, you should be logged in there, but from then on, everything is automated. A list of servers you can use is available from the <a href="@project">Localization server project page</a>.', array('@project' => 'http://drupal.org/project/l10n_server')),
+    '#description' => t('This server will be used to share translations submitted through the localization client interface. Each local submission will result in a call to this server as well. To be able to submit a translation there, you should be logged in there, but from then on, everything is automated. A list of servers you can use is available from the <a href="@project">Localization server project page</a>.', array('@project' => 'http://drupal.org/project/l10n_server')),
     '#default_value' => variable_get('l10n_client_server', ''),
   );
   return system_settings_form($form);
@@ -347,12 +351,14 @@ function l10n_client_settings_form() {
  * Make sure it supports the exact version of the API we will try to use.
  */
 function l10n_client_settings_form_validate($form, &$form_state) {
-  // Try to invoke the remote string submission with a test request.
-  $response = drupal_http_request($form_state['values']['l10n_client_server'] .'/translate/remote/1.0/test');
-  if (!preg_match('!^<\!-- v1\.0 Localization community!', $response->data)) {
-    form_set_error('l10n_client_server', t('Invalid localization server address specified, or the given server could not handle the v1.0 remote submission API. Make sure you specified the right server address.'));
-  }
-  else {
-    drupal_set_message(t('Verified that the specified server can handle remote string submissions.'));
+  if ($form_state['values']['l10n_client_use_server']) {
+    // Try to invoke the remote string submission with a test request.
+    $response = drupal_http_request($form_state['values']['l10n_client_server'] .'/translate/remote/1.0/test');
+    if (!preg_match('!^<\!-- v1\.0 Localization community!', $response->data)) {
+      form_set_error('l10n_client_server', t('Invalid localization server address specified, or the given server could not handle the v1.0 remote submission API. Make sure you specified the right server address.'));
+    }
+    else {
+      drupal_set_message(t('Verified that the specified server can handle remote string submissions.'));
+    }
   }
 }
