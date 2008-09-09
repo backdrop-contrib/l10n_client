@@ -257,6 +257,7 @@ function l10n_client_save_string() {
       $report = array(0, 0, 0);
       _locale_import_one_string_db($report, $language->language, $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
       cache_clear_all('locale:', 'cache', TRUE);
+      _locale_invalidate_js($language->language);
     }
   }
 }
