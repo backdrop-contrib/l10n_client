@@ -110,31 +110,31 @@ how it wants to round. */
   #l10n-client .string-list li.active {
     font-weight:bold;}
 
-  #l10n-client #l10n-client-search {
+  #l10n-client #l10n-client-search-form {
     background:#eee;
     text-align:center;
     height:2em; line-height:2em;
     margin:0em; padding:.5em .5em;
   }
 
-  #l10n-client #l10n-client-search .form-item,
-  #l10n-client #l10n-client-search input.form-text,
-  #l10n-client #l10n-client-search #search-filter-go,
-  #l10n-client #l10n-client-search #search-filter-clear {
+  #l10n-client #l10n-client-search-form .form-item,
+  #l10n-client #l10n-client-search-form input.form-text,
+  #l10n-client #l10n-client-search-form #search-filter-go,
+  #l10n-client #l10n-client-search-form #search-filter-clear {
     display:inline;
     vertical-align:middle;
   }
   
-    #l10n-client #l10n-client-search .form-item {
+    #l10n-client #l10n-client-search-form .form-item {
       margin:0em;
       padding:0em;
     }
   
-    #l10n-client #l10n-client-search input.form-text {
+    #l10n-client #l10n-client-search-form input.form-text {
       width:80%;
     }
   
-    #l10n-client #l10n-client-search #search-filter-clear {
+    #l10n-client #l10n-client-search-form #search-filter-clear {
       width:10%;
       margin:0em;
     }
