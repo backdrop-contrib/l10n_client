@@ -100,6 +100,11 @@ function l10n_client_init() {
     // Turn off the short string cache *in this request*, so we will
     // have an accurate picture of strings used to assemble the page.
     $conf['locale_cache_strings'] = 0;
+    // Reset locale cache. If any hook_init() implementation was invoked before
+    // this point, that would normally result in all strings loaded into memory.
+    // That would go against our goal of displaying only strings used on the page
+    // and would hang browsers. Drops any string used for the page before this point.
+    locale(NULL, NULL, TRUE);
     drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css', 'module');
     // Add jquery cookie plugin -- this should actually belong in 
     // jstools (but hasn't been updated for HEAD)
