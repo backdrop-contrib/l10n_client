@@ -7,6 +7,11 @@
  */
 
 /**
+ * Number of strings for paging on translation pages.
+ */
+define('L10N_CLIENT_STRINGS', 100);
+
+/**
  * Implementation of hook_menu().
  */
 function l10n_client_menu() {
@@ -18,7 +23,26 @@ function l10n_client_menu() {
     'access arguments' => array('use on-page translation'),
     'type' => MENU_CALLBACK,
   );
-
+  // Helper pages to group all translated/untranslated strings.  
+  $items['locale'] = array(
+    'title' => 'Translate strings',
+    'page callback' => 'l10n_client_translate_page',
+    'access arguments' => array('use on-page translation'),
+  );
+  $items['locale/untranslated'] = array(
+    'title' => 'Untranslated',
+    'page arguments' => array('untranslated'),
+    'access arguments' => array('use on-page translation'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['locale/translated'] = array(
+    'title' => 'Translated',
+    'page arguments' => array('translated'),
+    'access arguments' => array('use on-page translation'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
   // Direct copy of the import tab from locale module to
   // make space for the "Reimport package" tab below.
   $items['admin/build/translate/import/file'] = array(
@@ -90,6 +114,73 @@ function l10n_client_init() {
 }
 
 /**
+ * Menu callback. Translation pages.
+ * 
+ * These pages just list strings so they can be added to the string list for
+ * translation below the page. This can be considered a hack, since we could
+ * just implement the same UI on the page, and do away with these artifical
+ * listings, but the current UI works, so we just reuse it this way.
+ * 
+ * This includes custom textgroup support that can be used manually or
+ * by other modules.
+ *
+ * @param $display_translated
+ *   Boolean indicating whether translated or untranslated strings are displayed.
+ * @param $textgroup
+ *   Internal name of textgroup to use.
+ * @param $allow_translation
+ *   Boolean indicating whether translation of strings via the l10n_client UI is allowed.
+ */
+function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'default', $allow_translation = TRUE) {
+  global $language;
+
+  $header = $table = array();
+  $output = '';
+
+  // Build query to look for strings.
+  $sql = "SELECT s.source, t.translation, t.language FROM {locales_source} s ";
+  if ($display_translated) {
+    $header = array(t('Source string'), t('Translation'));
+    $sql .= "INNER JOIN {locales_target} t ON s.lid = t.lid WHERE t.language = '%s' AND t.translation != '' ";
+  }
+  else {
+    $header = array(t('Source string'));
+    $sql .= "LEFT JOIN {locales_target} t ON s.lid = t.lid AND t.language = '%s' WHERE (t.translation IS NULL OR t.translation = '') ";
+  }
+  if (!empty($textgroup)) {
+    $sql .= "AND s.textgroup ='" . db_escape_string($textgroup) . "' ";
+  }
+  $sql .= 'ORDER BY s.source';
+  
+  // For the 'default' textgroup and English language we don't allow translation.
+  $allow_translation = (($textgroup == 'default') && ($language->language == 'en')) ? FALSE : $allow_translation;
+  
+  $result = pager_query($sql, L10N_CLIENT_STRINGS, 0, NULL, $language->language);
+  while ($data = db_fetch_object($result)) {
+    if ($display_translated) {
+      $table[] = array($data->source, $data->translation);
+      if ($allow_translation) {
+        l10_client_add_string_to_page($data->source, $data->translation);
+      }
+    }
+    else {
+      $table[] = array($data->source);
+      if ($allow_translation) {
+        l10_client_add_string_to_page($data->source, TRUE);
+      }
+    }
+  }
+  if (!empty($table)) { 
+    $output .= ($pager = theme('pager', NULL, L10N_CLIENT_STRINGS));
+    $output .= theme('table', $header, $table);
+    $output .= $pager;
+  } else {
+    $output .= t('No strings found to translate.');
+  }
+  return $output;
+}
+
+/**
  * Implementation of hook_footer().
  *
  * Output a form to the page and a list of strings used to build
@@ -98,62 +189,109 @@ function l10n_client_init() {
 function l10n_client_footer() {
   global $conf, $language;
   
-  if (user_access('use on-page translation')) {
-    // Get all strings used on the page.
-    $strings = locale();
-    
-    if (is_array($strings) && isset($strings[$language->language])) {
-      // If we have strings for the page language, restructure the data.
-      $l10n_strings = array();
-      foreach ($strings[$language->language] as $string => $translation) {
-        $l10n_strings[] = array($string, $translation);
-      }
-      array_multisort($l10n_strings);
-      // Include string selector on page.
-      $string_list = _l10n_client_string_list($l10n_strings);
-      // Include editing form on page.
-      $l10n_form = drupal_get_form('l10n_client_form', $l10n_strings);
-      // Include search form on page.
-      $l10n_search = drupal_get_form('l10n_client_search_form');
+  // Check permission and get all strings used on the page.
+  if (user_access('use on-page translation') && ($page_strings = _l10n_client_page_strings())) {
+    // If we have strings for the page language, restructure the data.
+    $l10n_strings = array();
+    foreach ($page_strings as $string => $translation) {
+      $l10n_strings[] = array($string, $translation);
+    }
+    array_multisort($l10n_strings);
+    // Include string selector on page.
+    $string_list = _l10n_client_string_list($l10n_strings);
+    // Include editing form on page.
+    $l10n_form = drupal_get_form('l10n_client_form', $l10n_strings);
+    // Include search form on page.
+    $l10n_search = drupal_get_form('l10n_client_search_form');
+    // Generate HTML wrapper with strings data.
+    $l10n_dom = _l10n_client_dom_strings($l10n_strings);
 
-      // We need this hack as JS addition does not work this late on the page.
-      //$l10n_json = '<script type="text/javascript">jQuery.extend(Drupal, { l10nStrings: '. drupal_to_js($l10n_strings) .' });</script>';   
-      $l10n_dom = _l10n_client_dom_strings($l10n_strings);
-
-      // UI Labels
-      $string_label = '<h2>'. t('Page Text') .'</h2>';
-      $source_label = '<h2>'. t('Source') .'</h2>';
-      $translation_label = '<h2>'. t('Translation to %language', array('%language' => $language->native)) .'</h2>';
-      $toggle_label = t('Translate Text');
+    // UI Labels
+    $string_label = '<h2>'. t('Page Text') .'</h2>';
+    $source_label = '<h2>'. t('Source') .'</h2>';
+    $translation_label = '<h2>'. t('Translation to %language', array('%language' => $language->native)) .'</h2>';
+    $toggle_label = t('Translate Text');
 
 
-      $output = "
-        <div id='l10n-client' class='hidden'>
-          <div class='labels'>
-            <span class='toggle'>$toggle_label</span>
-            <div class='label strings'>$string_label</div>
-            <div class='label source'>$source_label</div>
-            <div class='label translation'>$translation_label</div>
+    $output = "
+      <div id='l10n-client' class='hidden'>
+        <div class='labels'>
+          <span class='toggle'>$toggle_label</span>
+          <div class='label strings'>$string_label</div>
+          <div class='label source'>$source_label</div>
+          <div class='label translation'>$translation_label</div>
+        </div>
+        <div id='l10n-client-string-select'>
+          $string_list
+          $l10n_search
+        </div>
+        <div id='l10n-client-string-editor'>
+          <div class='source'>
+            <div class='source-text'></div>
           </div>
-          <div id='l10n-client-string-select'>
-            $string_list
-            $l10n_search
-          </div>
-          <div id='l10n-client-string-editor'>
-            <div class='source'>
-              <div class='source-text'></div>
-            </div>
-            <div class='translation'>
-              $l10n_form
-            </div>
+          <div class='translation'>
+            $l10n_form
           </div>
         </div>
-        $l10n_dom
-      ";
+      </div>
+      $l10n_dom
+    ";
 
-      return $output;
+    return $output;
+  }
+}
+
+/**
+ * Adds a string to the list onto the l10n_client UI on this page.
+ *
+ * @param $source
+ *   Source string or NULL if geting the list of strings specified.
+ * @param $translation
+ *   Translation string. TRUE if untranslated.
+ */
+function l10_client_add_string_to_page($source = NULL, $translation = NULL) {
+  static $strings = array();
+  
+  if (isset($source)) {
+    $strings[$source] = $translation;
+  }
+  else {
+    return $strings;
+  }
+}
+
+/**
+ * Get the strings to translate for this page.
+ *
+ * These will be:
+ *   - The ones added through l10n_client_add_string_to_page() by this or other modules.
+ *   - The strings stored by the locale function (not for for this module's own pages).
+ */
+function _l10n_client_page_strings() {
+  global $language;
+
+  // Get the page strins stored by this or other modules.
+  $strings = l10_client_add_string_to_page();
+  
+  // If this is not the module's translation page, merge all strings used on the page.
+  if (arg(0) != 'locale' && is_array($locale = locale()) && isset($locale[$language->language])) {
+    
+    $strings = array_merge($strings, $locale[$language->language]);
+    
+    // Also select and add other strings for this path. Other users may have run
+    // into these strings for the same page. This might be useful in some cases
+    // but will not work reliably in all cases, since strings might have been
+    // found on completely different paths first, or on a slightly different
+    // path.
+    $result = db_query("SELECT s.source, t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON s.lid = t.lid AND t.language = '%s' WHERE s.location = '%s'", $language->language, request_uri());
+    while ($data = db_fetch_object($result)) {
+      if (!array_key_exists($data->source, $strings)) {
+        $strings[$data->source] = (empty($data->translation) ? TRUE : $data->translation);
+      }
     }
   }
+  
+  return $strings;
 }
 
 /**
