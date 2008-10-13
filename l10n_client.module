@@ -54,7 +54,7 @@ function l10n_client_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['admin/build/translate/import/package'] = array(
-    'title' => 'Reimport package',
+    'title' => 'Reimport packages',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('l10n_client_import_package_form'),
     'access arguments' => array('translate interface'),
@@ -427,21 +427,26 @@ function l10n_client_import_package_form(&$form_state) {
   $form = array();
   $form['reimport'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Reimport translation package'),
+    '#title' => t('Reimport translation packages'),
   );
-  $form['reimport']['langcode'] = array(
-    '#type' => 'radios',
-    '#title' => t('Language package'),
+  $form['reimport']['langcodes'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Language packages'),
+    '#description' => t('Choose language packages to reimport translations from. All files of the packages should be already uncompressed to the Drupal directories. All translation files will be imported for enabled modules and themes and will be imported to the built-in interface textgroup.'),
     '#options' => $names,
-    '#default_value' => array_shift(array_keys($names)),
-    '#description' => t('Choose a language package to reimport translations from. All files of the package should be already uncompressed to the Drupal directories. All translation files will be imported for enabled modules and themes and will be imported to the built in interface textgroup.'),
+    '#required' => TRUE,
   );
-  $form['reimport']['cleanup'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Clean up database before reimport'),
-    '#description' => t('If checked, all translations for the given language will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution.')
+  $form['reimport']['textgroups'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Clean up textgroups in database before reimport'),
+    '#description' => t('If checked, all translations for the given language and selected textgroups will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution.'),
+    '#default_value' => array('default'),
+    '#options' => module_invoke_all('locale', 'groups'),
   );
-  $form['reimport']['submit'] = array('#type' => 'submit', '#value' => t('Reimport package'));
+  $form['reimport']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reimport packages')
+  );
   return $form;
 }
 
@@ -451,17 +456,21 @@ function l10n_client_import_package_form(&$form_state) {
  * @see l10n_client_import_package_form()
  */
 function l10n_client_import_package_form_submit($form, &$form_state) {
-  if (!empty($form_state['values']['cleanup'])) {
+  if (!empty($form_state['values']['textgroups'])) {
     // Clean out all translations first if user asked to do that.
-    db_query("DELETE FROM {locales_target} WHERE language = '%s'", $form_state['values']['langcode']);
+    $langcodes = array_keys(array_filter($form_state['values']['langcodes']));
+    $textgroups = array_keys(array_filter($form_state['values']['textgroups']));
+    db_query("DELETE FROM {locales_target} WHERE language IN (". db_placeholders($langcodes, 'varchar') .") AND lid IN (SELECT lid FROM {locales_source} WHERE textgroup IN (". db_placeholders($textgroups, 'varchar') ."))", array_merge($langcodes, $textgroups));
     // Also remove all source strings without translations.
     db_query("DELETE FROM {locales_source} WHERE lid NOT IN (SELECT lid FROM {locales_target})");
   }
-  
+
   // Set up and start batch for new imports.
   include_once 'includes/locale.inc';
-  if ($batch = locale_batch_by_language($form_state['values']['langcode'], '_locale_batch_language_finished')) {
-    batch_set($batch);
+  foreach (array_filter($form_state['values']['langcodes']) as $langcode) {
+    if ($batch = locale_batch_by_language($langcode, '_locale_batch_language_finished')) {
+      batch_set($batch);
+    }
   }
   $form_state['redirect'] = 'admin/build/translate';
 }
