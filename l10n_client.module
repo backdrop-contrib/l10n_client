@@ -87,7 +87,7 @@ function l10n_client_menu() {
  * Implementation of hook_perm().
  */
 function l10n_client_perm() {
-  return array('use on-page translation');
+  return array('use on-page translation', 'submit translations to localization server');
 }
 
 /**
@@ -112,7 +112,7 @@ function l10n_client_init() {
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
     // Add server address if we have a server set up. Otherwise add empty string.
-    drupal_add_js(array('l10n_client_server' => variable_get('l10n_client_use_server', 0) ? variable_get('l10n_client_server', '') .'/translate/remote/1.0/'. $language->language : ''), 'setting');
+    drupal_add_js(array('l10n_client_server' => variable_get('l10n_client_use_server', FALSE) ? variable_get('l10n_client_server', '') .'/translate/remote/1.0/'. $language->language : ''), 'setting');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js', 'module');
   }
@@ -392,7 +392,7 @@ function l10n_client_search_form() {
  * Menu callback. Saves a string translation coming as POST data.
  */
 function l10n_client_save_string() {
-  global $language;
+  global $user, $language;
   
   if (user_access('use on-page translation')) {
     if (isset($_POST['source']) && isset($_POST['target'])) {
@@ -401,6 +401,11 @@ function l10n_client_save_string() {
       _locale_import_one_string_db($report, $language->language, $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
       cache_clear_all('locale:', 'cache', TRUE);
       _locale_invalidate_js($language->language);
+      
+      // Submit to remote server if enabled.
+      if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server') && !empty($user->l10n_client_key)) {
+        l10n_client_submit_translation($language->language, $_POST['source'], $_POST['target'], $user->l10n_client_key, l10n_client_user_token($user));
+      }
     }
   }
 }
@@ -487,7 +492,7 @@ function l10n_client_settings_form() {
   $form['l10n_client_use_server'] = array(
     '#title' => t('Enable sharing translations with server'),
     '#type' => 'checkbox',
-    '#default_value' => variable_get('l10n_client_use_server', 0),
+    '#default_value' => variable_get('l10n_client_use_server', FALSE),
   );
   $form['l10n_client_server'] = array(
     '#title' => t('Address of localization server to use'),
@@ -505,13 +510,85 @@ function l10n_client_settings_form() {
  */
 function l10n_client_settings_form_validate($form, &$form_state) {
   if ($form_state['values']['l10n_client_use_server']) {
+    
     // Try to invoke the remote string submission with a test request.
-    $response = drupal_http_request($form_state['values']['l10n_client_server'] .'/translate/remote/1.0/test');
-    if (!preg_match('!^<\!-- v1\.0 Localization community!', $response->data)) {
-      form_set_error('l10n_client_server', t('Invalid localization server address specified, or the given server could not handle the v1.0 remote submission API. Make sure you specified the right server address.'));
+    $response = xmlrpc($form_state['values']['l10n_client_server'] .'/xmlrpc.php', 'l10n.server.test', '2.0');
+   
+    if ($response && !empty($response['name']) && !empty($response['version'])) {
+      if (empty($response['supported']) || !$response['supported']) {
+        form_set_error('l10n_client_server', t('The given server could not handle the v2.0 remote submission API.'));
+      }
+      else {
+        drupal_set_message(t('Verified that the specified server can handle remote string submissions. Supported languages: %languages.', array('%languages' => $response['languages'])));
+      }
     }
     else {
-      drupal_set_message(t('Verified that the specified server can handle remote string submissions.'));
+      form_set_error('l10n_client_server', t('Invalid localization server address specified. Make sure you specified the right server address.'));
     }
+  }
+}
+
+/**
+ * Implementation of hook_user().
+ * 
+ * Set up API key for localization server.
+ */
+function l10n_client_user($type, $edit, &$account, $category = NULL) { 
+  if ($type == 'form' && $category == 'account' && variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server', $account)) {
+    $form['l10n_client'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Localization client'),
+      '#weight' => 1,
+    );
+    // Build link to retrieve user key.
+    $server_link = variable_get('l10n_client_server', '') .'?q=translate/remote/userkey/'. l10n_client_user_token($account);
+    $form['l10n_client']['l10n_client_key'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your Loalization Server API key'),
+      '#default_value' => !empty($account->l10n_client_key) ? $account->l10n_client_key : '',
+      '#description' => t('This is a unique key that will allow you to send translations to the remote server. To get your API key go to !server-link.', array('!server-link' => l($server_link, $server_link))),
+    );
+    return $form;
+  }
+}
+
+/**
+ * Get user based semi unique token. This will ensure user keys are unique for each client.
+ */
+function l10n_client_user_token($account = NULL) {
+  global $user;
+  $account = isset($account) ? $account : $user;
+  return md5('l10n_client'. $account->uid . drupal_get_private_key());
+}
+
+/**
+ * Submit translation to the server.
+ */
+function l10n_client_submit_translation($langcode, $source, $translation, $user_key, $user_token) {
+  $server_uid = current(split(':', $user_key));
+  $signature = md5($user_key . $langcode . $source . $translation . $user_token);
+  
+  $response = xmlrpc(
+    variable_get('l10n_client_server', '') .'/xmlrpc.php',
+    'l10n.submit.translation', 
+    $langcode,
+    $source,
+    $translation,
+    (int)$server_uid,
+    $user_token,
+    $signature
+  );
+
+  if (!empty($response) && isset($response['status'])) {
+    if ($response['status']) {
+      watchdog('l10n_client', 'Translation sent and accepted by remote server.');
+    } else {
+      watchdog('l10n_client', 'Translation rejected by remote server. Reason: %reason', array('%reason' => $response['reason']), WATCHDOG_WARNING);
+    }
+    return $response['status'];
+  }
+  else {
+    watchdog('l10n_client', 'The connection with the remote server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg()), WATCHDOG_ERROR);
+    return FALSE;
   }
 }
