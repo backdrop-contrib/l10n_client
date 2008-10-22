@@ -143,10 +143,6 @@ Drupal.behaviors.l10nClient = function (context) {
     Drupal.l10nClient.filter(false);
   });
 
-  // Add iframe for form submissions going to an l10n_server.
-  $('body').append('<form id="formToL10nServer" style="display:none;"></form>');
-  $('body').append('<iframe name="toL10nServer" style="display:none;"></iframe>');
-
   // Send AJAX POST data on form submit.
   $('#l10n-client-form').submit(function() {
     $.ajax({
@@ -154,7 +150,8 @@ Drupal.behaviors.l10nClient = function (context) {
       url: $('#l10n-client-form').attr('action'),
       // Send source and target strings.
       data: 'source=' + Drupal.encodeURIComponent($('#l10n-client-string-editor .source-text').text()) +
-            '&target=' + Drupal.encodeURIComponent($('#l10n-client-form #edit-target').val()),
+            '&target=' + Drupal.encodeURIComponent($('#l10n-client-form #edit-target').val()) +
+            '&form_token=' + Drupal.encodeURIComponent($('#l10n-client-form #edit-l10n-client-form-form-token').val()),
       success: function (data) {
         // Store string in local js
         Drupal.l10nClient.setString(Drupal.l10nClient.selected, $('#l10n-client-form #edit-target').val());
@@ -171,12 +168,6 @@ Drupal.behaviors.l10nClient = function (context) {
         alert(Drupal.t('An HTTP error @status occured.', { '@status': xmlhttp.status }));
       }
     });
-    
-    // A little hack to get a form submitted to the third-party l10n_server.
-    $('#formToL10nServer').attr('action', Drupal.settings.l10n_client_server).attr('method', 'POST').attr('target', 'toL10nServer').html(
-      '<textarea name="source">'+ Drupal.checkPlain($('#l10n-client-string-editor .source-text').text()) +'</textarea>'+
-      '<textarea name="target">'+ Drupal.checkPlain($('#l10n-client-form #edit-target').val()) +'</textarea>'
-    ).submit();
     return false;
   });
   

@@ -111,8 +111,6 @@ function l10n_client_init() {
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
-    // Add server address if we have a server set up. Otherwise add empty string.
-    drupal_add_js(array('l10n_client_server' => variable_get('l10n_client_use_server', FALSE) ? variable_get('l10n_client_server', '') .'/translate/remote/1.0/'. $language->language : ''), 'setting');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js', 'module');
   }
@@ -395,7 +393,7 @@ function l10n_client_save_string() {
   global $user, $language;
   
   if (user_access('use on-page translation')) {
-    if (isset($_POST['source']) && isset($_POST['target'])) {
+    if (isset($_POST['source']) && isset($_POST['target']) && !empty($_POST['form_token']) && drupal_valid_token($_POST['form_token'], 'l10n_client_form')) {
       include_once 'includes/locale.inc';
       $report = array(0, 0, 0);
       _locale_import_one_string_db($report, $language->language, $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
