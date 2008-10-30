@@ -542,7 +542,7 @@ function l10n_client_user($type, $edit, &$account, $category = NULL) {
     $server_link = variable_get('l10n_client_server', '') .'?q=translate/remote/userkey/'. l10n_client_user_token($account);
     $form['l10n_client']['l10n_client_key'] = array(
       '#type' => 'textfield',
-      '#title' => t('Your Loalization Server API key'),
+      '#title' => t('Your Localization Server API key'),
       '#default_value' => !empty($account->l10n_client_key) ? $account->l10n_client_key : '',
       '#description' => t('This is a unique key that will allow you to send translations to the remote server. To get your API key go to !server-link.', array('!server-link' => l($server_link, $server_link))),
     );
