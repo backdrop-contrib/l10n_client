@@ -3,3 +3,4 @@ name = Localization client
 description = Provides on-page localization
 dependencies[] = locale
 core = 6.x
+package = Multilanguage
