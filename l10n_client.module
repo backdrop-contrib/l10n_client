@@ -327,11 +327,24 @@ function _l10n_client_string_list($strings) {
     // TRUE means we don't have translation, so we use the original string,
     // so we always have the string displayed on the page in the dropdown.
     $original = $values[1] === TRUE ? $values[0] : $values[1];
-    // Remove html tags, at least for display
-    $original = strip_tags($original);
-    // Truncate and add ellipsis if too long.
-    $string = truncate_utf8($original, 78, TRUE);
-    $select_list[] = "<li class='$str_class'>". $string . ($original == $string ? '' : '...') .'</li>';
+    
+    // Remove HTML tags for display.
+    $string = strip_tags($original);
+    
+    if (empty($string)) {
+      // Edge case where the whole string was HTML tags. For the
+      // user to be able to select anything, we need to show part
+      // of the HTML tags. Truncate first, so we do not truncate in
+      // the middle of an already escaped HTML tag, thus possibly
+      // breaking the page.
+      $string = htmlspecialchars(truncate_utf8($original, 78, TRUE, TRUE), ENT_NOQUOTES, 'UTF-8');
+    }
+    else {
+      // Truncate and add ellipsis if too long.
+      $string = truncate_utf8($string, 78, TRUE, TRUE);
+    }
+    
+    $select_list[] = "<li class='$str_class'>$string</li>";
   }
   $output = implode("\n", $select_list);
   return "<ul class='string-list'>$output</ul>";

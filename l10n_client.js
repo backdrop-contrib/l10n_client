@@ -156,8 +156,28 @@ Drupal.behaviors.l10nClient = function (context) {
         // Store string in local js
         Drupal.l10nClient.setString(Drupal.l10nClient.selected, $('#l10n-client-form #edit-target').val());
 
+        // Figure out the display of the new translation in the selection list.
+        var newTranslationDisplay = '';
+        var newTranslation = $('#l10n-client-form #edit-target').val();
+        var newTranslationStripped = newTranslation.replace(/<\/?[^<>]+>/gi, '')
+                                                   .replace(/&quot;/g, '"')
+                                                   .replace(/&lt;/g, "<")
+                                                   .replace(/&gt;/g, ">")
+                                                   .replace(/&amp;/g, "&");
+        if (newTranslationStripped.length == 0) {
+          // Only contains HTML tags (edge case). Keep the whole string.
+          // HTML tags will show up in the selector, but that is normal in this case.
+          newTranslationDisplay = newTranslation;
+        }
+        else if (newTranslationStripped.length > 81) {
+          // Long translation, strip length to display only first part.
+          // We strip at 78 chars and add thre dots, if the total length is
+          // above 81.
+          newTranslationDisplay = newTranslationStripped.substr(0, 78) + '...';
+        }
+        
         // Mark string as translated.
-        $('#l10n-client-string-select li').eq(Drupal.l10nClient.selected).removeClass('untranslated').removeClass('active').addClass('translated').text($('#l10n-client-form #edit-target').val());
+        $('#l10n-client-string-select li').eq(Drupal.l10nClient.selected).removeClass('untranslated').removeClass('active').addClass('translated').text(newTranslationDisplay);
 
         // Empty input fields.
         $('#l10n-client-string-editor .source-text').html('');
