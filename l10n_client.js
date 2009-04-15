@@ -59,11 +59,11 @@ jQuery.extend(Drupal, {
     }
     // Get a string from the DOM tree
     this.getString = function(index, type) {
-      return $('#l10n-client-data div:eq('+index+') .'+type).html();
+      return $('#l10n-client-data div:eq('+index+') .'+type).text();
     }
     // Set a string in the DOM tree
     this.setString = function(index, data) {
-      $('#l10n-client-data div:eq('+index+') .target').html(data);
+      $('#l10n-client-data div:eq('+index+') .target').text(data);
     }
     // Filter the the string list by a search string
     this.filter = function(search) {

@@ -161,13 +161,13 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
   $result = pager_query($sql, L10N_CLIENT_STRINGS, 0, NULL, $language->language);
   while ($data = db_fetch_object($result)) {
     if ($display_translated) {
-      $table[] = array($data->source, $data->translation);
+      $table[] = array(check_plain($data->source), check_plain($data->translation));
       if ($allow_translation) {
         l10_client_add_string_to_page($data->source, $data->translation);
       }
     }
     else {
-      $table[] = array($data->source);
+      $table[] = array(check_plain($data->source));
       if ($allow_translation) {
         l10_client_add_string_to_page($data->source, TRUE);
       }
@@ -303,8 +303,8 @@ function _l10n_client_page_strings() {
 function _l10n_client_dom_strings($strings) {
   $output = '';
   foreach ($strings as $values) {
-    $source = $values[0] === TRUE ? '' : $values[0];
-    $target = $values[1] === TRUE ? '' : $values[1];
+    $source = $values[0] === TRUE ? '' : htmlspecialchars($values[0], ENT_NOQUOTES, 'UTF-8');
+    $target = $values[1] === TRUE ? '' : htmlspecialchars($values[1], ENT_NOQUOTES, 'UTF-8');
     $output .= "<div><span class='source'>$source</span><span class='target'>$target</span></div>";
   }
   return "<div id='l10n-client-data'>$output</div>";
