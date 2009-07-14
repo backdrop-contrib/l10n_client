@@ -1,7 +1,9 @@
 // $Id$
 
+(function ($) {
+
 // Store all l10n_client related data + methods in its own object
-jQuery.extend(Drupal, {
+$.extend(Drupal, {
   l10nClient: new (function() {
     // Set "selected" string to unselected, i.e. -1
     this.selected = -1;
@@ -84,7 +86,8 @@ jQuery.extend(Drupal, {
 });
 
 // Attaches the localization editor behavior to all required fields.
-Drupal.behaviors.l10nClient = function (context) {
+Drupal.behaviors.l10nClient = {}
+Drupal.behaviors.l10nClient.attach = function (context) {
 
   switch($.cookie('Drupal_l10n_client')) {
     case '1':
@@ -149,16 +152,18 @@ Drupal.behaviors.l10nClient = function (context) {
       type: "POST",
       url: $('#l10n-client-form').attr('action'),
       // Send source and target strings.
-      data: 'source=' + Drupal.encodeURIComponent($('#l10n-client-string-editor .source-text').text()) +
-            '&target=' + Drupal.encodeURIComponent($('#l10n-client-form #edit-target').val()) +
-            '&form_token=' + Drupal.encodeURIComponent($('#l10n-client-form #edit-l10n-client-form-form-token').val()),
+      data: {
+        source: $('#l10n-client-string-editor .source-text').text(),
+        target: $('#l10n-client-form #edit-target').val(),
+        'form_token': $('#l10n-client-form #edit-l10n-client-form-form-token').val()
+      },
       success: function (data) {
         // Store string in local js
         Drupal.l10nClient.setString(Drupal.l10nClient.selected, $('#l10n-client-form #edit-target').val());
 
         // Figure out the display of the new translation in the selection list.
-        var newTranslationDisplay = '';
         var newTranslation = $('#l10n-client-form #edit-target').val();
+        var newTranslationDisplay = newTranslation;
         var newTranslationStripped = newTranslation.replace(/<\/?[^<>]+>/gi, '')
                                                    .replace(/&quot;/g, '"')
                                                    .replace(/&lt;/g, "<")
@@ -192,3 +197,5 @@ Drupal.behaviors.l10nClient = function (context) {
   });
   
 };
+
+})(jQuery);

@@ -45,15 +45,15 @@ function l10n_client_menu() {
   );
   // Direct copy of the import tab from locale module to
   // make space for the "Reimport package" tab below.
-  $items['admin/build/translate/import/file'] = array(
+  $items['admin/international/translate/import/file'] = array(
     'title' => 'Import file',
-    'page callback' => 'locale_inc_callback',
-    'page arguments' => array('drupal_get_form', 'locale_translate_import_form'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('locale_translate_import_form'),
     'access arguments' => array('translate interface'),
     'weight' => -5,
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items['admin/build/translate/import/package'] = array(
+  $items['admin/international/translate/import/package'] = array(
     'title' => 'Reimport packages',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('l10n_client_import_package_form'),
@@ -64,15 +64,15 @@ function l10n_client_menu() {
 
   // Direct copy of the Configure tab from locale module to
   // make space for the "Localization sharing" tab below.
-  $items['admin/settings/language/configure/language'] = array(
+  $items['admin/international/language/configure/language'] = array(
     'title' => 'Language negotiation',
-    'page callback' => 'locale_inc_callback',
-    'page arguments' => array('drupal_get_form', 'locale_languages_configure_form'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('locale_languages_configure_form'),
     'access arguments' => array('administer languages'),
     'weight' => -10,
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-  $items['admin/settings/language/configure/l10n_client'] = array(
+  $items['admin/international/language/configure/l10n_client'] = array(
     'title' => 'Localization sharing',  
     'page callback' => 'drupal_get_form',
     'page arguments' => array('l10n_client_settings_form'),
@@ -84,10 +84,19 @@ function l10n_client_menu() {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implementation of hook_permission().
  */
-function l10n_client_perm() {
-  return array('use on-page translation', 'submit translations to localization server');
+function l10n_client_permission() {
+  return array(
+    'use on-page translation' => array(
+      'title' => t('Use on-page translation'),
+      'description' => t('Makes it possible to translate the Drupal interface on-page.'),      
+    ), 
+    'submit translations to localization server' => array(
+      'title' => t('Submit translations to localization server'),
+      'description' => t('Allows users to submit translations to a remote localization server.'),      
+    ),
+  );
 }
 
 /**
@@ -104,15 +113,15 @@ function l10n_client_init() {
     // this point, that would normally result in all strings loaded into memory.
     // That would go against our goal of displaying only strings used on the page
     // and would hang browsers. Drops any string used for the page before this point.
-    locale(NULL, NULL, TRUE);
-    drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css', 'module');
+    locale(NULL, NULL, NULL, TRUE);
+    drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css');
     // Add jquery cookie plugin -- this should actually belong in 
     // jstools (but hasn't been updated for HEAD)
-    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js', 'module');
-    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js', 'module');
-    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js', 'module');
+    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js');
+    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js');
+    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js');
     // We use textareas to be able to edit long text, which need resizing.
-    drupal_add_js('misc/textarea.js', 'module');
+    drupal_add_js('misc/textarea.js');
   }
 }
 
@@ -203,9 +212,9 @@ function l10n_client_footer() {
     // Include string selector on page.
     $string_list = _l10n_client_string_list($l10n_strings);
     // Include editing form on page.
-    $l10n_form = drupal_get_form('l10n_client_form', $l10n_strings);
+    $l10n_form = drupal_render(drupal_get_form('l10n_client_form', $l10n_strings));
     // Include search form on page.
-    $l10n_search = drupal_get_form('l10n_client_search_form');
+    $l10n_search = drupal_render(drupal_get_form('l10n_client_search_form'));
     // Generate HTML wrapper with strings data.
     $l10n_dom = _l10n_client_dom_strings($l10n_strings);
 
@@ -278,8 +287,8 @@ function _l10n_client_page_strings() {
   
   // If this is not the module's translation page, merge all strings used on the page.
   if (arg(0) != 'locale' && is_array($locale = locale()) && isset($locale[$language->language])) {
-    
-    $strings = array_merge($strings, $locale[$language->language]);
+    // @todo: add actual context support.
+    $strings = array_merge($strings, $locale[$language->language]['']);
     
     // Also select and add other strings for this path. Other users may have run
     // into these strings for the same page. This might be useful in some cases
@@ -374,10 +383,10 @@ function l10n_client_form($form_id, $strings) {
     '#type' => 'submit',
   );
   $form['copy'] = array(
-    '#value' => "<input id='edit-copy' class='form-submit' type='button' value='". t('Copy Source') ."'/>",
+    '#markup' => "<input id='edit-copy' class='form-submit' type='button' value='". t('Copy Source') ."'/>",
   );
   $form['clear'] = array(
-    '#value' => "<input id='edit-clear' class='form-submit' type='button' value='". t('Clear') ."'/>",
+    '#markup' => "<input id='edit-clear' class='form-submit' type='button' value='". t('Clear') ."'/>",
   );
   
   return $form;
@@ -394,7 +403,7 @@ function l10n_client_search_form() {
     '#type' => 'textfield',
   );
   $form['clear-button'] = array(
-    '#value' => "<input id='search-filter-clear' class='form-submit' type='button' value='". t('X') ."'/>",
+    '#markup' => "<input id='search-filter-clear' class='form-submit' type='button' value='". t('X') ."'/>",
   );
   return $form;
 }
@@ -409,7 +418,8 @@ function l10n_client_save_string() {
     if (isset($_POST['source']) && isset($_POST['target']) && !empty($_POST['form_token']) && drupal_valid_token($_POST['form_token'], 'l10n_client_form')) {
       include_once 'includes/locale.inc';
       $report = array(0, 0, 0);
-      _locale_import_one_string_db($report, $language->language, $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
+      // @todo: add actual context support.
+      _locale_import_one_string_db($report, $language->language, '', $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
       cache_clear_all('locale:', 'cache', TRUE);
       _locale_invalidate_js($language->language);
       
@@ -429,14 +439,14 @@ function l10n_client_save_string() {
  * @ingroup forms
  * @see l10n_client_import_package_form_submit()
  */
-function l10n_client_import_package_form(&$form_state) {
+function l10n_client_import_package_form() {
   // Get all languages, except English
   $names = locale_language_list('name', TRUE);
   unset($names['en']);
 
   if (!count($names)) {
     // This only works if there is any foreign language set up.
-    drupal_set_message(t('No languages set up to reimport packages into.', 'warning'));
+    drupal_set_message(t('No languages set up to reimport packages into.'), 'warning');
     return array();
   }
   
@@ -520,7 +530,7 @@ function l10n_client_settings_form() {
  * Make sure it supports the exact version of the API we will try to use.
  */
 function l10n_client_settings_form_validate($form, &$form_state) {
-  if ($form_state['values']['l10n_client_use_server']) {
+  if ($form_state['values']['l10n_client_use_server'] && drupal_function_exists('xmlrpc')) {
     
     // Try to invoke the remote string submission with a test request.
     $response = xmlrpc($form_state['values']['l10n_client_server'] .'/xmlrpc.php', 'l10n.server.test', '2.0');
