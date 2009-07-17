@@ -115,10 +115,8 @@ function l10n_client_init() {
     // and would hang browsers. Drops any string used for the page before this point.
     locale(NULL, NULL, NULL, TRUE);
     drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css');
-    // Add jquery cookie plugin -- this should actually belong in 
-    // jstools (but hasn't been updated for HEAD)
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js');
-    drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.cookie.js');
+    drupal_add_js('misc/jquery.cookie.js');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/l10n_client.js');
     // We use textareas to be able to edit long text, which need resizing.
     drupal_add_js('misc/textarea.js');
