@@ -88,6 +88,13 @@ $.extend(Drupal, {
 // Attaches the localization editor behavior to all required fields.
 Drupal.behaviors.l10nClient = {}
 Drupal.behaviors.l10nClient.attach = function (context) {
+  // Killswitch - attach only once.
+  if ($('#l10n-client').is('.l10n-client-processed')) {
+    return;
+  }
+
+  // First time - init & attach all handlers.
+  $('#l10n-client').addClass('l10n-client-processed');
 
   switch($.cookie('Drupal_l10n_client')) {
     case '1':
