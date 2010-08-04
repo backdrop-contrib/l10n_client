@@ -131,11 +131,13 @@ Drupal.behaviors.l10nClient.attach = function (context) {
   // Copy source text to translation field on button click.
   $('#l10n-client-form .edit-copy').click(function() {
     $('#l10n-client-form .translation-target').val($('#l10n-client-string-editor .source-text').text());
+    return false;
   });
 
   // Clear translation field on button click.
   $('#l10n-client-form .edit-clear').click(function() {
     $('#l10n-client-form .translation-target').val('');
+    return false;
   });
 
   // Register keybindings using jQuery hotkeys
@@ -152,6 +154,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
   // Clear search
   $('#l10n-client #l10n-client-search-filter-clear').click(function() {
     Drupal.l10nClient.filter(false);
+    return false;
   });
 
   // Send AJAX POST data on form submit.
