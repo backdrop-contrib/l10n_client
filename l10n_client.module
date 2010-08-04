@@ -207,9 +207,11 @@ function l10n_client_page_alter(&$page) {
     // Include string selector on page.
     $string_list = _l10n_client_string_list($l10n_strings);
     // Include editing form on page.
-    $l10n_form = drupal_render(drupal_get_form('l10n_client_form', $l10n_strings));
+    $form = drupal_get_form('l10n_client_form', $l10n_strings);
+    $l10n_form = drupal_render($form);
     // Include search form on page.
-    $l10n_search = drupal_render(drupal_get_form('l10n_client_search_form'));
+    $form = drupal_get_form('l10n_client_search_form');
+    $l10n_search = drupal_render($form);
     // Generate HTML wrapper with strings data.
     $l10n_dom = _l10n_client_dom_strings($l10n_strings);
 
