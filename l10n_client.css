@@ -7,7 +7,7 @@ how it wants to round. */
 /* l10n_client container */
 #l10n-client {
   text-align:left;
-  z-index:99;
+  z-index:9999;
   line-height:1em;
   color:#000; background:#fff;
   position:fixed;
