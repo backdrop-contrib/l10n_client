@@ -19,12 +19,12 @@ $.extend(Drupal, {
           if(userSelection.length > 0) {
             Drupal.l10nClient.filter(userSelection);
             Drupal.l10nClient.toggle(1);
-            $('#l10n-client #edit-search').focus();
+            $('#l10n-client .string-search').focus();
           } else {
             if($('#l10n-client').is('.hidden')) {
               Drupal.l10nClient.toggle(1);
               if(!$.browser.safari) {
-                $('#l10n-client #edit-search').focus();
+                $('#l10n-client .string-search').focus();
               }
             } else {
               Drupal.l10nClient.toggle(0);
@@ -70,15 +70,15 @@ $.extend(Drupal, {
     // Filter the the string list by a search string
     this.filter = function(search) {
       if(search == false || search == '') {
-        $('#l10n-client #search-filter-clear').focus();
+        $('#l10n-client #l10n-client-search-filter-clear').focus();
         $('#l10n-client-string-select li').show();
-        $('#l10n-client #edit-search').val('');
-        $('#l10n-client #edit-search').focus();
+        $('#l10n-client .string-search').val('');
+        $('#l10n-client .string-search').focus();
       } else {
         if(search.length > 0) {
           $('#l10n-client-string-select li').hide();
           $('#l10n-client-string-select li:contains('+search+')').show();
-          $('#l10n-client #edit-search').val(search);
+          $('#l10n-client .string-search').val(search);
         }
       }
     }
@@ -129,28 +129,28 @@ Drupal.behaviors.l10nClient.attach = function (context) {
   });
 
   // Copy source text to translation field on button click.
-  $('#l10n-client-form #edit-copy').click(function() {
+  $('#l10n-client-form .edit-copy').click(function() {
     $('#l10n-client-form .translation-target').val($('#l10n-client-string-editor .source-text').text());
   });
 
   // Clear translation field on button click.
-  $('#l10n-client-form #edit-clear').click(function() {
+  $('#l10n-client-form .edit-clear').click(function() {
     $('#l10n-client-form .translation-target').val('');
   });
 
   // Register keybindings using jQuery hotkeys
   if($.hotkeys) {
     $.hotkeys.add(Drupal.l10nClient.keys['toggle'], function(){Drupal.l10nClient.key('toggle')});
-    $.hotkeys.add(Drupal.l10nClient.keys['clear'], {target:'#l10n-client #edit-search', type:'keyup'}, function(){Drupal.l10nClient.key('clear')});
+    $.hotkeys.add(Drupal.l10nClient.keys['clear'], {target:'#l10n-client .string-search', type:'keyup'}, function(){Drupal.l10nClient.key('clear')});
   }
 
   // Custom listener for l10n_client livesearch
-  $('#l10n-client #edit-search').keyup(function(key) {
-    Drupal.l10nClient.filter($('#l10n-client #edit-search').val());
+  $('#l10n-client .string-search').keyup(function(key) {
+    Drupal.l10nClient.filter($('#l10n-client .string-search').val());
   });
 
   // Clear search
-  $('#l10n-client #search-filter-clear').click(function() {
+  $('#l10n-client #l10n-client-search-filter-clear').click(function() {
     Drupal.l10nClient.filter(false);
   });
 

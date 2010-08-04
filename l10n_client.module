@@ -383,10 +383,10 @@ function l10n_client_form($form_id, $strings) {
     '#type' => 'submit',
   );
   $form['copy'] = array(
-    '#markup' => "<input id='edit-copy' class='form-submit' type='button' value='". t('Copy Source') ."'/>",
+    '#markup' => "<input id='l10n-client-edit-copy' class='form-submit edit-copy' type='button' value='". t('Copy Source') ."'/>",
   );
   $form['clear'] = array(
-    '#markup' => "<input id='edit-clear' class='form-submit' type='button' value='". t('Clear') ."'/>",
+    '#markup' => "<input id='l10n-client-edit-clear' class='form-submit edit-clear' type='button' value='". t('Clear') ."'/>",
   );
 
   return $form;
@@ -401,9 +401,10 @@ function l10n_client_search_form() {
   $form = array();
   $form['search'] = array(
     '#type' => 'textfield',
+    '#attributes' => array('class' => array('string-search')),
   );
   $form['clear-button'] = array(
-    '#markup' => "<input id='search-filter-clear' class='form-submit' type='button' value='". t('X') ."'/>",
+    '#markup' => "<input id='l10n-client-search-filter-clear' class='form-submit' type='button' value='". t('X') ."'/>",
   );
   return $form;
 }
