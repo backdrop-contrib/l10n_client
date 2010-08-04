@@ -116,6 +116,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
     $('#l10n-client-form #edit-target').val(Drupal.l10nClient.getString(index, 'target'));
 
     Drupal.l10nClient.selected = index;
+    $('#l10n-client-form .form-submit').removeAttr("disabled");
   });
 
   // When l10n_client window is clicked, toggle based on current state.
@@ -155,6 +156,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
 
   // Send AJAX POST data on form submit.
   $('#l10n-client-form').submit(function() {
+    $('#l10n-client-form .form-submit').attr("disabled", "true");
     $.ajax({
       type: "POST",
       url: $('#l10n-client-form').attr('action'),
