@@ -486,17 +486,19 @@ function l10n_client_import_package_form_submit($form, &$form_state) {
     $langcodes = array_keys(array_filter($form_state['values']['langcodes']));
     $textgroups = array_keys(array_filter($form_state['values']['textgroups']));
 
-    $query = db_select('locales_source')->fields('locales_source', array('lid'));
-    $query->condition('textgroup', $textgroups);
-    $lids = $query->execute()->fetchCol('lid');
+    if (!empty($textgroups)) {
+      $query = db_select('locales_source')->fields('locales_source', array('lid'));
+      $query->condition('textgroup', $textgroups);
+      $lids = $query->execute()->fetchCol('lid');
 
-    db_delete('locales_target')
-      ->condition('language', $langcodes)
-      ->condition('lid', $lids)
-      ->execute();
+      db_delete('locales_target')
+        ->condition('language', $langcodes)
+        ->condition('lid', $lids)
+        ->execute();
 
-    // Also remove all source strings without translations.
-    db_query("DELETE FROM {locales_source} WHERE lid NOT IN (SELECT lid FROM {locales_target})");
+      // Also remove all source strings without translations.
+      db_query("DELETE FROM {locales_source} WHERE lid NOT IN (SELECT lid FROM {locales_target})");
+    }
   }
 
   // Set up and start batch for new imports.
