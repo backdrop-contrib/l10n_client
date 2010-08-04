@@ -466,7 +466,7 @@ function l10n_client_import_package_form() {
     '#type' => 'checkboxes',
     '#title' => t('Clean up textgroups in database before reimport'),
     '#description' => t('If checked, all translations for the given language and selected textgroups will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution.'),
-    '#default_value' => array('default'),
+    '#default_value' => array(),
     '#options' => module_invoke_all('locale', 'groups'),
   );
   $form['reimport']['submit'] = array(
