@@ -19,20 +19,20 @@ $.extend(Drupal, {
           if(userSelection.length > 0) {
             Drupal.l10nClient.filter(userSelection);
             Drupal.l10nClient.toggle(1);
-            $('#l10n-client #edit-search').focus();      
+            $('#l10n-client #edit-search').focus();
           } else {
             if($('#l10n-client').is('.hidden')) {
               Drupal.l10nClient.toggle(1);
               if(!$.browser.safari) {
                 $('#l10n-client #edit-search').focus();
               }
-            } else { 
+            } else {
               Drupal.l10nClient.toggle(0);
             }
           }
         break;
         case 'clear':
-          this.filter(false);      
+          this.filter(false);
         break;
       }
     }
@@ -56,7 +56,7 @@ $.extend(Drupal, {
             $('body').css('border-bottom', '0px');
           }
           $.cookie('Drupal_l10n_client', '0', {expires: 7, path: '/'});
-        break;        
+        break;
       }
     }
     // Get a string from the DOM tree
@@ -104,7 +104,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
       Drupal.l10nClient.toggle(0);
     break;
   }
-  
+
   // If the selection changes, copy string values to the source and target fields.
   // Add class to indicate selected string in list widget.
   $('#l10n-client-string-select li').click(function() {
@@ -113,7 +113,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
     var index = $('#l10n-client-string-select li').index(this);
 
     $('#l10n-client-string-editor .source-text').text(Drupal.l10nClient.getString(index, 'source'));
-    $('#l10n-client-form #edit-target').val(Drupal.l10nClient.getString(index, 'target'));
+    $('#l10n-client-form .translation-target').val(Drupal.l10nClient.getString(index, 'target'));
 
     Drupal.l10nClient.selected = index;
     $('#l10n-client-form .form-submit').removeAttr("disabled");
@@ -123,19 +123,19 @@ Drupal.behaviors.l10nClient.attach = function (context) {
   $('#l10n-client .labels .toggle').click(function() {
     if($('#l10n-client').is('.hidden')) {
       Drupal.l10nClient.toggle(1);
-    } else { 
+    } else {
       Drupal.l10nClient.toggle(0);
     }
   });
 
   // Copy source text to translation field on button click.
   $('#l10n-client-form #edit-copy').click(function() {
-    $('#l10n-client-form #edit-target').val($('#l10n-client-string-editor .source-text').text());
+    $('#l10n-client-form .translation-target').val($('#l10n-client-string-editor .source-text').text());
   });
 
   // Clear translation field on button click.
   $('#l10n-client-form #edit-clear').click(function() {
-    $('#l10n-client-form #edit-target').val('');
+    $('#l10n-client-form .translation-target').val('');
   });
 
   // Register keybindings using jQuery hotkeys
@@ -143,7 +143,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
     $.hotkeys.add(Drupal.l10nClient.keys['toggle'], function(){Drupal.l10nClient.key('toggle')});
     $.hotkeys.add(Drupal.l10nClient.keys['clear'], {target:'#l10n-client #edit-search', type:'keyup'}, function(){Drupal.l10nClient.key('clear')});
   }
-  
+
   // Custom listener for l10n_client livesearch
   $('#l10n-client #edit-search').keyup(function(key) {
     Drupal.l10nClient.filter($('#l10n-client #edit-search').val());
@@ -163,15 +163,15 @@ Drupal.behaviors.l10nClient.attach = function (context) {
       // Send source and target strings.
       data: {
         source: $('#l10n-client-string-editor .source-text').text(),
-        target: $('#l10n-client-form #edit-target').val(),
+        target: $('#l10n-client-form .translation-target').val(),
         'form_token': $('#l10n-client-form #edit-l10n-client-form-form-token').val()
       },
       success: function (data) {
         // Store string in local js
-        Drupal.l10nClient.setString(Drupal.l10nClient.selected, $('#l10n-client-form #edit-target').val());
+        Drupal.l10nClient.setString(Drupal.l10nClient.selected, $('#l10n-client-form .translation-target').val());
 
         // Figure out the display of the new translation in the selection list.
-        var newTranslation = $('#l10n-client-form #edit-target').val();
+        var newTranslation = $('#l10n-client-form .translation-target').val();
         var newTranslationDisplay = newTranslation;
         var newTranslationStripped = newTranslation.replace(/<\/?[^<>]+>/gi, '')
                                                    .replace(/&quot;/g, '"')
@@ -189,13 +189,13 @@ Drupal.behaviors.l10nClient.attach = function (context) {
           // above 81.
           newTranslationDisplay = newTranslationStripped.substr(0, 78) + '...';
         }
-        
+
         // Mark string as translated.
         $('#l10n-client-string-select li').eq(Drupal.l10nClient.selected).removeClass('untranslated').removeClass('active').addClass('translated').text(newTranslationDisplay);
 
         // Empty input fields.
         $('#l10n-client-string-editor .source-text').html('');
-        $('#l10n-client-form #edit-target').val('');
+        $('#l10n-client-form .translation-target').val('');
 
       },
       error: function (xmlhttp) {
@@ -204,7 +204,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
     });
     return false;
   });
-  
+
 };
 
 })(jQuery);

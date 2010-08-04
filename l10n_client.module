@@ -376,6 +376,7 @@ function l10n_client_form($form_id, $strings) {
     '#type' => 'textarea',
     '#resizable' => false,
     '#rows' => 6,
+    '#attributes' => array('class' => array('translation-target')),
   );
   $form['save'] = array(
     '#value' => t('Save translation'),
