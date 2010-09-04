@@ -17,7 +17,7 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 
 msgid "Use on-page translation"
-msgstr "Use on-page translation"
+msgstr "Übersetzung innerhalb der Seite verwenden"
 
 msgid "Makes it possible to translate the Drupal interface on-page."
 msgstr "Ermöglicht es die Drupal-Oberfläche innerhalb der Website zu übersetzen."
