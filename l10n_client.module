@@ -549,7 +549,7 @@ function l10n_client_settings_form() {
   $form['l10n_client_server'] = array(
     '#title' => t('Address of localization server to use'),
     '#type' => 'textfield',
-    '#description' => t('This server will be used to share translations submitted through the localization client interface. Each local submission will result in a call to this server as well. To be able to submit a translation there, you should be logged in there, but from then on, everything is automated. A list of servers you can use is available from the <a href="@project">Localization server project page</a>.', array('@project' => 'http://drupal.org/project/l10n_server')),
+    '#description' => t('Each translation submission will also be submitted to the server, if the personal key is set up for the submitter in their user profile. We suggest you set this to <a href="@localize">http://localize.drupal.org</a> to share with the greater Drupal community.', array('@localize' => 'http://localize.drupal.org')),
     '#default_value' => variable_get('l10n_client_server', ''),
   );
   return system_settings_form($form);
@@ -563,19 +563,23 @@ function l10n_client_settings_form() {
 function l10n_client_settings_form_validate($form, &$form_state) {
   if ($form_state['values']['l10n_client_use_server']) {
 
-    // Try to invoke the remote string submission with a test request.
-    $response = xmlrpc($form_state['values']['l10n_client_server'] .'/xmlrpc.php', 'l10n.server.test', '2.0');
-
-    if ($response && !empty($response['name']) && !empty($response['version'])) {
-      if (empty($response['supported']) || !$response['supported']) {
-        form_set_error('l10n_client_server', t('The given server could not handle the v2.0 remote submission API.'));
+    if (!empty($form_state['values']['l10n_client_server'])) {
+      // Try to invoke the remote string submission with a test request.
+      $response = xmlrpc($form_state['values']['l10n_client_server'] .'/xmlrpc.php', array('l10n.server.test' => array('2.0')));
+      if ($response && !empty($response['name']) && !empty($response['version'])) {
+        if (empty($response['supported']) || !$response['supported']) {
+          form_set_error('l10n_client_server', t('The given server could not handle the v2.0 remote submission API.'));
+        }
+        else {
+          drupal_set_message(t('Verified that the specified server can handle remote string submissions. Supported languages: %languages.', array('%languages' => $response['languages'])));
+        }
       }
       else {
-        drupal_set_message(t('Verified that the specified server can handle remote string submissions. Supported languages: %languages.', array('%languages' => $response['languages'])));
+        form_set_error('l10n_client_server', t('Invalid localization server address specified. Make sure you specified the right server address.'));
       }
     }
     else {
-      form_set_error('l10n_client_server', t('Invalid localization server address specified. Make sure you specified the right server address.'));
+      form_set_error('l10n_client_server', t('You should provide a server address, such as http://localize.drupal.org'));
     }
   }
 }
@@ -651,13 +655,14 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
 
   $response = xmlrpc(
     variable_get('l10n_client_server', '') .'/xmlrpc.php',
-    'l10n.submit.translation',
-    $langcode,
-    $source,
-    $translation,
-    (int)$server_uid,
-    $user_token,
-    $signature
+    array('l10n.submit.translation' => array(
+      $langcode,
+      $source,
+      $translation,
+      (int)$server_uid,
+      $user_token,
+      $signature
+    ))
   );
 
   if (!empty($response) && isset($response['status'])) {

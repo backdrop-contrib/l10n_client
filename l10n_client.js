@@ -167,7 +167,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
       data: {
         source: $('#l10n-client-string-editor .source-text').text(),
         target: $('#l10n-client-form .translation-target').val(),
-        'form_token': $('#l10n-client-form #edit-l10n-client-form-form-token').val()
+        'form_token': $('#l10n-client-form input[name=form_token]').val()
       },
       success: function (data) {
         // Store string in local js
