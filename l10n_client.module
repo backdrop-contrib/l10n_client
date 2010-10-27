@@ -44,25 +44,6 @@ function l10n_client_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
-  // Direct copy of the import tab from locale module to
-  // make space for the "Reimport package" tab below.
-  // @todo: possibly make actions if/when core import becomes an action.
-  $items['admin/config/regional/translate/import/file'] = array(
-    'title' => 'Import file',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('locale_translate_import_form'),
-    'access arguments' => array('translate interface'),
-    'weight' => -5,
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-  $items['admin/config/regional/translate/import/package'] = array(
-    'title' => 'Reimport packages',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('l10n_client_import_package_form'),
-    'access arguments' => array('translate interface'),
-    'weight' => 5,
-    'type' => MENU_LOCAL_TASK,
-  );
 
   $items['admin/config/regional/language/share'] = array(
     'title' => 'Sharing',
@@ -449,87 +430,6 @@ function l10n_client_save_string() {
       }
     }
   }
-}
-
-// -----------------------------------------------------------------------------
-
-/**
- * Page callback function to present a form to reimport a translation package.
- *
- * @ingroup forms
- * @see l10n_client_import_package_form_submit()
- */
-function l10n_client_import_package_form() {
-  // Get all languages, except English
-  $names = locale_language_list('name', TRUE);
-  unset($names['en']);
-
-  if (!count($names)) {
-    // This only works if there is any foreign language set up.
-    drupal_set_message(t('No languages set up to reimport packages into.'), 'warning');
-    return array();
-  }
-
-  $form = array();
-  $form['reimport'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Reimport translation packages'),
-  );
-  $form['reimport']['langcodes'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Language packages'),
-    '#description' => t('Choose language packages to reimport translations from. All files of the packages should be already uncompressed to the Drupal directories. All translation files will be imported for enabled modules and themes and will be imported to the built-in interface textgroup.'),
-    '#options' => $names,
-    '#required' => TRUE,
-  );
-  $form['reimport']['textgroups'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Clean up textgroups in database before reimport'),
-    '#description' => t('If checked, all translations for the given language and selected textgroups will be deleted from the database first, and you will loose all your customized translations and those not available in the files being imported. Use with extreme caution.'),
-    '#default_value' => array(),
-    '#options' => module_invoke_all('locale', 'groups'),
-  );
-  $form['reimport']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Reimport packages')
-  );
-  return $form;
-}
-
-/**
- * Submission handler for package reimport form.
- *
- * @see l10n_client_import_package_form()
- */
-function l10n_client_import_package_form_submit($form, &$form_state) {
-  if (!empty($form_state['values']['textgroups'])) {
-    // Clean out all translations first if user asked to do that.
-    $langcodes = array_keys(array_filter($form_state['values']['langcodes']));
-    $textgroups = array_keys(array_filter($form_state['values']['textgroups']));
-
-    if (!empty($textgroups)) {
-      $query = db_select('locales_source')->fields('locales_source', array('lid'));
-      $query->condition('textgroup', $textgroups);
-      $lids = $query->execute()->fetchCol('lid');
-
-      db_delete('locales_target')
-        ->condition('language', $langcodes)
-        ->condition('lid', $lids)
-        ->execute();
-
-      // Also remove all source strings without translations.
-      db_query("DELETE FROM {locales_source} WHERE lid NOT IN (SELECT lid FROM {locales_target})");
-    }
-  }
-
-  // Set up and start batch for new imports.
-  include_once 'includes/locale.inc';
-  foreach (array_filter($form_state['values']['langcodes']) as $langcode) {
-    if ($batch = locale_batch_by_language($langcode, '_locale_batch_language_finished')) {
-      batch_set($batch);
-    }
-  }
-  $form_state['redirect'] = 'admin/config/regional/translate';
 }
 
 // -----------------------------------------------------------------------------
