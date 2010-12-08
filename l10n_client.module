@@ -160,13 +160,13 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
     if ($display_translated) {
       $table[] = array(check_plain($data->source), check_plain($data->translation));
       if ($allow_translation) {
-        l10_client_add_string_to_page($data->source, $data->translation);
+        l10_client_add_string_to_page($data->source, $data->translation, $textgroup);
       }
     }
     else {
       $table[] = array(check_plain($data->source));
       if ($allow_translation) {
-        l10_client_add_string_to_page($data->source, TRUE);
+        l10_client_add_string_to_page($data->source, TRUE, $textgroup);
       }
     }
   }
@@ -192,8 +192,10 @@ function l10n_client_page_alter(&$page) {
   if (l10n_client_access() && ($page_strings = _l10n_client_page_strings())) {
     // If we have strings for the page language, restructure the data.
     $l10n_strings = array();
-    foreach ($page_strings as $string => $translation) {
-      $l10n_strings[] = array($string, $translation);
+    foreach ($page_strings as $textgroup => $group_strings) {
+      foreach ($group_strings as $string => $translation) {
+        $l10n_strings[] = array($string, $translation, $textgroup);
+      }
     }
     array_multisort($l10n_strings);
     // Include string selector on page.
@@ -251,12 +253,14 @@ function l10n_client_page_alter(&$page) {
  *   Source string or NULL if geting the list of strings specified.
  * @param $translation
  *   Translation string. TRUE if untranslated.
+ * @param $textgroup
+ *   Text group the string belongs to
  */
-function l10_client_add_string_to_page($source = NULL, $translation = NULL) {
+function l10_client_add_string_to_page($source = NULL, $translation = NULL, $textgroup = 'default') {
   static $strings = array();
 
   if (isset($source)) {
-    $strings[$source] = $translation;
+    $strings[$textgroup][$source] = $translation;
   }
   else {
     return $strings;
@@ -273,23 +277,25 @@ function l10_client_add_string_to_page($source = NULL, $translation = NULL) {
 function _l10n_client_page_strings() {
   global $language;
 
-  // Get the page strins stored by this or other modules.
+  // Get the page strings stored by this or other modules.
   $strings = l10_client_add_string_to_page();
 
   // If this is not the module's translation page, merge all strings used on the page.
   if (arg(0) != 'locale' && is_array($locale = locale()) && isset($locale[$language->language])) {
+    // Get the page strings stored by this or other modules.
+    $strings += array('default' => array());
     // @todo: add actual context support.
-    $strings = array_merge($strings, $locale[$language->language]['']);
+    $strings['default'] = array_merge($strings['default'], $locale[$language->language]['']);
 
     // Also select and add other strings for this path. Other users may have run
     // into these strings for the same page. This might be useful in some cases
     // but will not work reliably in all cases, since strings might have been
     // found on completely different paths first, or on a slightly different
     // path.
-    $result = db_query("SELECT s.source, t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON s.lid = t.lid AND t.language = :language WHERE s.location = :location", array(':language' => $language->language, ':location' => request_uri()));
+    $result = db_query("SELECT s.source, t.translation, s.textgroup FROM {locales_source} s LEFT JOIN {locales_target} t ON s.lid = t.lid AND t.language = :language WHERE s.location = :location", array(':language' => $language->language, ':location' => request_uri()));
     foreach ($result as $data) {
-      if (!array_key_exists($data->source, $strings)) {
-        $strings[$data->source] = (empty($data->translation) ? TRUE : $data->translation);
+      if (!array_key_exists($data->source, $strings[$data->textgroup])) {
+        $strings[$data->textgroup][$data->source] = (empty($data->translation) ? TRUE : $data->translation);
       }
     }
   }
@@ -305,7 +311,8 @@ function _l10n_client_dom_strings($strings) {
   foreach ($strings as $values) {
     $source = $values[0] === TRUE ? '' : htmlspecialchars($values[0], ENT_NOQUOTES, 'UTF-8');
     $target = $values[1] === TRUE ? '' : htmlspecialchars($values[1], ENT_NOQUOTES, 'UTF-8');
-    $output .= "<div><span class='source'>$source</span><span class='target'>$target</span></div>";
+    $textgroup = $values[2];
+    $output .= "<div><span class='source'>$source</span><span class='target'>$target</span><span class='textgroup'>$textgroup</span></div>";
   }
   return "<div id='l10n-client-data'>$output</div>";
 }
@@ -374,6 +381,11 @@ function l10n_client_form($form_id, $strings) {
     '#value' => t('Save translation'),
     '#type' => 'submit',
   );
+  $form['textgroup'] = array(
+    '#type' => 'hidden',
+    '#value' => 'default',
+    '#attributes' => array('class' => array('source-textgroup')),
+  );
   $form['copy'] = array(
     '#type' => 'button',
     '#id' => 'l10n-client-edit-copy',
@@ -416,11 +428,11 @@ function l10n_client_save_string() {
   global $user, $language;
 
   if (l10n_client_access()) {
-    if (isset($_POST['source']) && isset($_POST['target']) && !empty($_POST['form_token']) && drupal_valid_token($_POST['form_token'], 'l10n_client_form')) {
+    if (isset($_POST['source']) && isset($_POST['target']) && isset($_POST['textgroup']) && !empty($_POST['form_token']) && drupal_valid_token($_POST['form_token'], 'l10n_client_form')) {
       include_once 'includes/locale.inc';
       $report = array('skips' => 0, 'additions' => 0, 'updates' => 0, 'deletes' => 0);
       // @todo: add actual context support.
-      _locale_import_one_string_db($report, $language->language, '', $_POST['source'], $_POST['target'], 'default', NULL, LOCALE_IMPORT_OVERWRITE);
+      _locale_import_one_string_db($report, $language->language, '', $_POST['source'], $_POST['target'], $_POST['textgroup'], NULL, LOCALE_IMPORT_OVERWRITE);
       cache_clear_all('locale:', 'cache', TRUE);
       _locale_invalidate_js($language->language);
 
