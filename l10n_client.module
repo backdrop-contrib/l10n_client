@@ -449,8 +449,8 @@ function l10n_client_settings_form() {
   $form['l10n_client_server'] = array(
     '#title' => t('Address of localization server to use'),
     '#type' => 'textfield',
-    '#description' => t('Each translation submission will also be submitted to the server, if the personal key is set up for the submitter in their user profile. We suggest you set this to <a href="@localize">http://localize.drupal.org</a> to share with the greater Drupal community.', array('@localize' => 'http://localize.drupal.org')),
-    '#default_value' => variable_get('l10n_client_server', ''),
+    '#description' => t('Each translation submission will also be submitted to this server. We suggest you enter <a href="@localize">http://localize.drupal.org</a> to share with the greater Drupal community. Make sure you set up an API-key in the user account settings for each user that will participate in the translations.', array('@localize' => 'http://localize.drupal.org')),
+    '#default_value' => variable_get('l10n_client_server', 'http://localize.drupal.org'),
   );
   return system_settings_form($form);
 }
@@ -496,7 +496,7 @@ function l10n_client_form_user_profile_form_alter(&$form, &$form_state) {
 
     if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server', $account)) {
       // Build link to retrieve user key.
-      $server_link = variable_get('l10n_client_server', '') .'?q=translate/remote/userkey/'. l10n_client_user_token($account);
+      $server_link = variable_get('l10n_client_server', 'http://localize.drupal.org') .'?q=translate/remote/userkey/'. l10n_client_user_token($account);
       $items['l10n_client_key'] = array(
         '#type' => 'textfield',
         '#title' => t('Your Localization Server API key'),
@@ -554,7 +554,7 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
   $signature = md5($user_key . $langcode . $source . $translation . $user_token);
 
   $response = xmlrpc(
-    variable_get('l10n_client_server', '') .'/xmlrpc.php',
+    variable_get('l10n_client_server', 'http://localize.drupal.org') .'/xmlrpc.php',
     array('l10n.submit.translation' => array(
       $langcode,
       $source,
