@@ -428,17 +428,23 @@ function l10n_client_save_string() {
   global $user, $language;
 
   if (l10n_client_access()) {
-    if (isset($_POST['source']) && isset($_POST['target']) && isset($_POST['textgroup']) && !empty($_POST['form_token']) && drupal_valid_token($_POST['form_token'], 'l10n_client_form')) {
-      include_once 'includes/locale.inc';
-      $report = array('skips' => 0, 'additions' => 0, 'updates' => 0, 'deletes' => 0);
+    if (isset($_POST['source']) && isset($_POST['target']) && !empty($_POST['textgroup']) && !empty($_POST['form_token']) && drupal_valid_token($_POST['form_token'], 'l10n_client_form')) {
+      // Ensure we have this source string before we attempt to save it.
       // @todo: add actual context support.
-      _locale_import_one_string_db($report, $language->language, '', $_POST['source'], $_POST['target'], $_POST['textgroup'], NULL, LOCALE_IMPORT_OVERWRITE);
-      cache_clear_all('locale:', 'cache', TRUE);
-      _locale_invalidate_js($language->language);
+      $lid = db_query("SELECT lid FROM {locales_source} WHERE source = :source AND context = :context AND textgroup = :textgroup", array(':source' => $_POST['source'], ':context' => '', ':textgroup' => $_POST['textgroup']))->fetchField();
+      
+      if (!empty($lid)) {
+        include_once 'includes/locale.inc';
+        $report = array('skips' => 0, 'additions' => 0, 'updates' => 0, 'deletes' => 0);
+        // @todo: add actual context support.
+        _locale_import_one_string_db($report, $language->language, '', $_POST['source'], $_POST['target'], $_POST['textgroup'], NULL, LOCALE_IMPORT_OVERWRITE);
+        cache_clear_all('locale:', 'cache', TRUE);
+        _locale_invalidate_js($language->language);
 
-      // Submit to remote server if enabled.
-      if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server') && !empty($user->data['l10n_client_key'])) {
-        l10n_client_submit_translation($language->language, $_POST['source'], $_POST['target'], $user->data['l10n_client_key'], l10n_client_user_token($user));
+        // Submit to remote server if enabled.
+        if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server') && !empty($user->data['l10n_client_key'])) {
+          l10n_client_submit_translation($language->language, $_POST['source'], $_POST['target'], $user->data['l10n_client_key'], l10n_client_user_token($user));
+        }
       }
     }
   }
