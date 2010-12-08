@@ -655,7 +655,7 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
   }
   else {
     $message = t('The connection with @server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg(), '@server' => $server_url));
-    watchdog('l10n_client', 'The connection with the remote server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg()), WATCHDOG_ERROR);
+    watchdog('l10n_client', 'The connection with @server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg(), '@server' => $server_url), WATCHDOG_ERROR);
     return array(FALSE, $message);
   }
 }
