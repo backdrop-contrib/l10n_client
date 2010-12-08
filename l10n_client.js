@@ -199,7 +199,7 @@ Drupal.behaviors.l10nClient.attach = function (context) {
         $('#l10n-client-string-select li').eq(Drupal.l10nClient.selected).removeClass('untranslated').removeClass('active').addClass('translated').text(newTranslationDisplay);
 
         // Empty input fields.
-        $('#l10n-client-string-editor .source-text').html('');
+        $('#l10n-client-string-editor .source-text').html(data);
         $('#l10n-client-form .translation-target').val('');
 
       },

@@ -73,6 +73,17 @@ function l10n_client_permission() {
 }
 
 /**
+ * Implement hook_theme().
+ */
+function l10n_client_theme($existing, $type, $theme, $path) {
+  return array(
+    'l10n_client_message' => array(
+      'variables' => array('message' => '', 'level' => WATCHDOG_ERROR),
+    ),
+  );
+}
+
+/**
  * Implement hook_init().
  */
 function l10n_client_init() {
@@ -440,13 +451,61 @@ function l10n_client_save_string() {
         _locale_import_one_string_db($report, $language->language, '', $_POST['source'], $_POST['target'], $_POST['textgroup'], NULL, LOCALE_IMPORT_OVERWRITE);
         cache_clear_all('locale:', 'cache', TRUE);
         _locale_invalidate_js($language->language);
+        if (!empty($report['skips'])) {
+          $message = theme('l10n_client_message', array('message' => t('Not saved locally due to invalid HTML content.')));
+        }
+        elseif (!empty($report['additions']) || !empty($report['updates'])) {
+          $message = theme('l10n_client_message', array('message' => t('Translation saved locally.'), 'level' => WATCHDOG_INFO));
+        }
+        elseif (!empty($report['deletes'])) {
+          $message = theme('l10n_client_message', array('message' => t('Translation successfuly removed locally.'), 'level' => WATCHDOG_INFO));
+        }
+        else {
+          $message = theme('l10n_client_message', array('message' => t('Unknown error while saving translation locally.')));
+        }
 
         // Submit to remote server if enabled.
-        if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server') && !empty($user->data['l10n_client_key'])) {
-          l10n_client_submit_translation($language->language, $_POST['source'], $_POST['target'], $user->data['l10n_client_key'], l10n_client_user_token($user));
+        if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server') && ($_POST['textgroup'] == 'default')) {
+          if (!empty($user->data['l10n_client_key'])) {
+            $remote_result = l10n_client_submit_translation($language->language, $_POST['source'], $_POST['target'], $user->data['l10n_client_key'], l10n_client_user_token($user));
+            $message .= theme('l10n_client_message', array('message' => $remote_result[1], 'level' => $remote_result[0] ? WATCHDOG_INFO : WATCHDOG_ERROR));
+          }
+          else {
+            $server_url = variable_get('l10n_client_server', 'http://localize.drupal.org');
+            $user_edit_url = url('user/'. $user->uid .'/edit', array('absolute' => TRUE));
+            $message .= theme('l10n_client_message', array('message' => t('You could share your work with !l10n_server if you set your API key at !user_link.', array('!l10n_server' => l($server_url, $server_url), '!user_link' => l($user_edit_url, 'user/'. $user->uid .'/edit'))), 'level' => WATCHDOG_WARNING));
+          }
         }
       }
+      else {
+        $message = theme('l10n_client_message', array('message' => t('Not saved due to source string missing.')));
+      }
     }
+    else {
+      $message = theme('l10n_client_message', array('message' => t('Not saved due to missing form values.')));
+    }
+  }
+  else {
+    $message = theme('l10n_client_message', array('message' => t('Not saved due to insufficient permissions.')));
+  }
+  drupal_json_output($message);
+  exit;
+}
+
+/**
+ * Theme function to wrap l10n_client messages in proper markup.
+ */
+function theme_l10n_client_message($vars) {
+  switch ($vars['level']) {
+    case WATCHDOG_INFO:
+      return '<div class="l10n-client-feedback message-info">'. $vars['message'] .'</div>';
+      break;
+    case WATCHDOG_WARNING:
+      return '<div class="l10n-client-feedback message-warning">'. $vars['message'] .'</div>';
+      break;
+    case WATCHDOG_ERROR:
+      return '<div class="l10n-client-feedback message-error">'. $vars['message'] .'</div>';
+      break;
   }
 }
 
@@ -570,9 +629,10 @@ function l10n_client_user_token($account = NULL) {
 function l10n_client_submit_translation($langcode, $source, $translation, $user_key, $user_token) {
   $server_uid = current(split(':', $user_key));
   $signature = md5($user_key . $langcode . $source . $translation . $user_token);
+  $server_url = variable_get('l10n_client_server', 'http://localize.drupal.org');
 
   $response = xmlrpc(
-    variable_get('l10n_client_server', 'http://localize.drupal.org') .'/xmlrpc.php',
+    $server_url .'/xmlrpc.php',
     array('l10n.submit.translation' => array(
       $langcode,
       $source,
@@ -585,14 +645,17 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
 
   if (!empty($response) && isset($response['status'])) {
     if ($response['status']) {
-      watchdog('l10n_client', 'Translation sent and accepted by remote server.');
+      $message = t('Translation sent and accepted by @server.', array('@server' => $server_url));
+      watchdog('l10n_client', 'Translation sent and accepted by @server.', array('@server' => $server_url));
     } else {
-      watchdog('l10n_client', 'Translation rejected by remote server. Reason: %reason', array('%reason' => $response['reason']), WATCHDOG_WARNING);
+      $message = t('Translation rejected by @server. Reason: %reason', array('%reason' => $response['reason'], '@server' => $server_url));
+      watchdog('l10n_client', 'Translation rejected by @server. Reason: %reason', array('%reason' => $response['reason'], '@server' => $server_url), WATCHDOG_WARNING);
     }
-    return $response['status'];
+    return array($response['status'], $message);
   }
   else {
+    $message = t('The connection with @server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg(), '@server' => $server_url));
     watchdog('l10n_client', 'The connection with the remote server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg()), WATCHDOG_ERROR);
-    return FALSE;
+    return array(FALSE, $message);
   }
 }

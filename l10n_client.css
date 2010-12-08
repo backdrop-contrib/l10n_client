@@ -175,3 +175,17 @@ how it wants to round. */
 
 #l10n-client-data {
   display:none;}
+
+.l10n-client-feedback {
+  background-color: #DF8;
+  padding: 5px;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.l10n-client-feedback.message-warning {
+  background-color: #FD8;
+}
+.l10n-client-feedback.message-error {
+  background-color: #F00;
+  color: #fff;
+}
