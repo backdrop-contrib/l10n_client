@@ -97,7 +97,7 @@ function l10n_client_init() {
     // this point, that would normally result in all strings loaded into memory.
     // That would go against our goal of displaying only strings used on the page
     // and would hang browsers. Drops any string used for the page before this point.
-    locale(NULL, NULL, NULL, TRUE);
+    drupal_static_reset('locale');
     drupal_add_css(drupal_get_path('module', 'l10n_client') .'/l10n_client.css');
     drupal_add_js(drupal_get_path('module', 'l10n_client') .'/jquery.hotkeys.js');
     drupal_add_js('misc/jquery.cookie.js');
