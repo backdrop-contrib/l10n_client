@@ -2,5 +2,5 @@ name = Localization client
 description = Provides on-page localization
 dependencies[] = locale
 core = 7.x
-package = Multilanguage
+package = Multilingual
 files[] = l10n_client.module
