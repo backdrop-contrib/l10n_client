@@ -138,13 +138,12 @@ function l10n_client_access($account = NULL) {
 function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'default', $allow_translation = TRUE) {
   global $language;
 
-  $header = $table = array();
+  $table = array();
 
   $query = db_select('locales_source', 's')->extend('PagerDefault');
-  $query->join('locales_target', 't', 's.lid = t.lid');
+  $query->leftJoin('locales_target', 't', "s.lid = t.lid AND t.language = :lang", array(':lang' => $language->language));
   $query->fields('s', array('source'))
     ->fields('t', array('translation', 'language'))
-    ->condition('t.language', $language->language)
     ->orderBy('s.source');
 
   if ($display_translated) {
@@ -153,7 +152,7 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
   }
   else {
     $header = array(t('Source string'));
-    $query->condition('t.translation', '');
+    $query->isNull('t.lid');
   }
   if (!empty($textgroup)) {
     $query->condition('s.textgroup', $textgroup);
@@ -163,7 +162,7 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
   $allow_translation = (($textgroup == 'default') && ($language->language == 'en')) ? FALSE : $allow_translation;
 
   $result = $query
-    ->limit( L10N_CLIENT_STRINGS)
+    ->limit(L10N_CLIENT_STRINGS)
     ->execute();
 
   foreach ($result as $data) {
@@ -180,13 +179,8 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
       }
     }
   }
-  if (!empty($table)) {
-    $pager = theme('pager');
-    $output = $pager . theme('table', $header, $table) . $pager;
-  } else {
-    $output = t('No strings found to translate.');
-  }
-  return $output;
+  $pager = theme('pager');
+  return $pager . theme('table', array('header' => $header, 'rows' => $table, 'empty' => t('No strings found to translate.'))) . $pager;
 }
 
 /**
