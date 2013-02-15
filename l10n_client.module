@@ -228,7 +228,7 @@ function l10n_client_page_alter(&$page) {
     $toggle_label = t('Translate Text');
 
     $output = "
-      <div id='l10n-client' class='hidden'>
+      <div id='l10n-client' class='l10n-client-minimized'>
         <div class='labels'>
           <span class='toggle'>$toggle_label</span>
           <div class='label strings'>$string_label</div>
