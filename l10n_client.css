@@ -104,6 +104,7 @@
 
 #l10n-client .string-list li {
   font-size: .9em;
+  min-height: 2em;
   line-height: 1.5em;
   cursor: default;
   background: transparent;
