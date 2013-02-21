@@ -18,6 +18,7 @@ $.extend(Drupal, {
           if(userSelection.length > 0) {
             Drupal.l10nClient.filter(userSelection);
             Drupal.l10nClient.toggle(1);
+            $('#l10n-client .string-search').val(userSelection);
             $('#l10n-client .string-search').focus();
           } else {
             if($('#l10n-client').is('.l10n-client-minimized')) {
@@ -77,7 +78,6 @@ $.extend(Drupal, {
         if(search.length > 0) {
           $('#l10n-client-string-select li').hide();
           $('#l10n-client-string-select li:contains('+search+')').show();
-          $('#l10n-client .string-search').val(search);
         }
       }
     }
