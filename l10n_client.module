@@ -383,6 +383,8 @@ function l10n_client_form($form_id, $strings) {
   $form['#action'] = url('l10n_client/save');
 
   $form['target'] = array(
+    '#title' => t('Translation to %language', array('%language' => $language->native)),
+    '#title_display' => 'invisible',
     '#type' => 'textarea',
     '#resizable' => false,
     '#rows' => 6,
@@ -426,6 +428,8 @@ function l10n_client_search_form() {
   // Selector and editing form.
   $form = array();
   $form['search'] = array(
+    '#title' => t('Search'),
+    '#title_display' => 'invisible',
     '#type' => 'textfield',
     '#attributes' => array('class' => array('string-search')),
   );
