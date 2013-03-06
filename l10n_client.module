@@ -324,7 +324,7 @@ function _l10n_client_dom_strings($strings) {
     $source = $source === TRUE ? '' : htmlspecialchars($source, ENT_NOQUOTES, 'UTF-8');
     $target = $target === TRUE ? '' : htmlspecialchars($target, ENT_NOQUOTES, 'UTF-8');
     $context = htmlspecialchars($context, ENT_NOQUOTES, 'UTF-8');
-    $output .= "<div><span class='source'>$source</span><span class='target'>$target</span><span class='textgroup'>$textgroup</span><span class='context'>$context</context></div>";
+    $output .= "<div><span class='source'>$source</span><span class='target'>$target</span><span class='textgroup'>$textgroup</span><span class='context'>$context</span></div>";
   }
   return "<div id='l10n-client-data'>$output</div>";
 }
