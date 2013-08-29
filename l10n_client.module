@@ -529,13 +529,15 @@ function l10n_client_form_user_profile_form_alter(&$form, &$form_state) {
   if ($form['#user_category'] == 'account') {
     $items = array();
     $account = $form['#user'];
+    $use_server = variable_get('l10n_client_use_server', FALSE);
+    $server_root = variable_get('l10n_client_server', 'http://localize.drupal.org');
 
-    if (variable_get('l10n_client_use_server', FALSE) && user_access('submit translations to localization server', $account)) {
+    if ($use_server && user_access('submit translations to localization server', $account)) {
       // Build link to retrieve user key.
-      $server_link = variable_get('l10n_client_server', 'http://localize.drupal.org') .'?q=translate/remote/userkey/'. l10n_client_user_token($account);
+      $server_link = $server_root . '?q=translate/remote/userkey/' . l10n_client_user_token($account);
       $items['l10n_client_key'] = array(
         '#type' => 'textfield',
-        '#title' => t('Your Localization Server API key'),
+        '#title' => t('Your API key for @server', array('@server' => $server_root)),
         '#default_value' => !empty($account->data['l10n_client_key']) ? $account->data['l10n_client_key'] : '',
         '#description' => t('This is a unique key that will allow you to send translations to the remote server. To get your API key go to !server-link.', array('!server-link' => l($server_link, $server_link))),
       );
