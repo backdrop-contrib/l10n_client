@@ -44,8 +44,8 @@ function l10n_client_menu() {
     'weight' => 10,
   );
 
-  $items['admin/config/regional/language/share'] = array(
-    'title' => 'Sharing',
+  $items['admin/config/regional/translate/client'] = array(
+    'title' => 'Client',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('l10n_client_settings_form'),
     'access arguments' => array('administer languages'),
@@ -115,7 +115,11 @@ function l10n_client_access($account = NULL) {
     global $user;
     $account = $user;
   }
-  return user_access('use on-page translation', $account) && empty($account->data['l10n_client_disabled']);
+  $user_enabled = empty($account->data['l10n_client_disabled']);
+  $user_access = user_access('use on-page translation', $account);
+  $paths = variable_get('l10n_client_disabled_paths', '');
+  $paths_disabled = !empty($paths) && drupal_match_path(current_path(), $paths);
+  return $user_access && $user_enabled && !$paths_disabled;
 }
 
 /**
