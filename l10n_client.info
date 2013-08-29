@@ -4,3 +4,5 @@ dependencies[] = locale
 core = 7.x
 package = Multilingual
 configure = admin/config/regional/language/share
+
+files[] = l10n_client.test
