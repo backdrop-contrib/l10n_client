@@ -79,7 +79,7 @@
         $stringSelect.show();
         $stringSearch.val('').focus();
       } else if (search.length > 0) {
-        $stringSelect.not(':contains(' + search + ')').hide();
+        $stringSelect.show().not(':contains(' + search + ')').hide();
       }
     }
   };
