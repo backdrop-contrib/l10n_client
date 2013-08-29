@@ -88,6 +88,7 @@
   Drupal.behaviors.l10nClient = {
     attach: function (context) {
       $('#l10n-client').once('l10n-client', function () {
+        $('body').addClass('l10n-client');
         var $l10nClient = $(this);
         var $l10nClientForm = $('#l10n-client-form');
         var $stringEditor = $('#l10n-client-string-editor');
