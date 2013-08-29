@@ -394,6 +394,7 @@ function l10n_client_form($form_id, $strings) {
   $form['save'] = array(
     '#value' => t('Save translation'),
     '#type' => 'submit',
+    '#attributes' => array('class' => array('edit-save')),
   );
   $form['textgroup'] = array(
     '#type' => 'hidden',

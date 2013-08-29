@@ -162,6 +162,9 @@
 
           // Prevent submit empty strings.
           $this.find('.form-submit').attr("disabled", true);
+          $this.find('.edit-save').after('<div class="ajax-progress ajax-progress-throbber">' +
+            '<div class="throbber">&nbsp;</div><div class="message">' +
+            Drupal.t('Please wait...') + '</div></div>');
 
           $.ajax({
             type: "POST",
@@ -207,7 +210,7 @@
               // Empty input fields.
               $stringEditorSoruceText.html(data);
               $translationTarget.val('');
-
+              $this.find('div.ajax-progress-throbber').remove();
             },
             error: function (xmlhttp) {
               alert(Drupal.t('An HTTP error @status occured.', { '@status': xmlhttp.status }));
