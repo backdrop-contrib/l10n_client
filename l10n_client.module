@@ -618,3 +618,15 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
     return array(FALSE, $message);
   }
 }
+
+/**
+ * Implements hook_field_extra_fields().
+ */
+function l10n_client_field_extra_fields() {
+  $extra['user']['user']['form']['l10nclient'] = array(
+    'label' => 'Localization client',
+    'description' => t('On-page localization form element.'),
+    'weight' => 10,
+  );
+  return $extra;
+}
