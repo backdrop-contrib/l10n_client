@@ -12,10 +12,12 @@
   color: #000;
   background: #fff;
   position: fixed;
-  width: 100%;
   bottom: 0;
-  left: 0;
+  right: 0;
   overflow: hidden;
+}
+.l10n-client-maximized {
+  width: 100%;
 }
 
 * html #l10n-client {
@@ -42,13 +44,15 @@
 #l10n-client .labels .toggle {
   cursor: pointer;
   display: block;
-  position: absolute;
   right: 0;
   padding: 0 .75em;
   height: 2em;
   line-height: 2em;
   text-transform: uppercase;
   text-align: center;
+}
+.l10n-client-maximized .labels .toggle {
+  position: absolute;
   background: #000;
 }
 
