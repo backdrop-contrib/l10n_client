@@ -42,7 +42,7 @@
       var $clientWrapper = $('#l10n-client-string-select, #l10n-client-string-editor, #l10n-client .labels .label');
       if (!!state == true) {
         $clientWrapper.show();
-        $l10nClient.removeClass('l10n-client-minimized').addClass('l10n-client-maximized').find('.labels .toggle').text('X');
+        $l10nClient.removeClass('l10n-client-minimized').addClass('l10n-client-maximized').find('.labels .toggle').text('x');
         $('body').addClass('toggle-expanded');
         $.cookie('Backdrop_l10n_client', '1', {expires: 7, path: '/'});
       } else {

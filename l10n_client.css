@@ -166,6 +166,8 @@
 #l10n-client #l10n-client-search-form #l10n-client-search-filter-clear {
   width: 10%;
   margin: 0;
+  padding: 0;
+  font-weight: bold;
 }
 
 #l10n-client-string-editor {
@@ -199,6 +201,7 @@
   overflow: hidden;
   width: 49%;
   float: right;
+  margin-top: 1em;
 }
 
 #l10n-client-form {
