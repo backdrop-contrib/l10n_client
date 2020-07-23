@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   Administrative page callbacks for the Localization client module.
+ * Administrative page callbacks for the Localization client module.
  */
 
 /**

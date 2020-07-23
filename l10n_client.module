@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   Localization client. Provides on-page translation editing.
+ * Localization client. Provides on-page translation editing.
  */
 
 /**
@@ -22,7 +22,7 @@ function l10n_client_config_info() {
 }
 
 /**
- * Implement hook_menu().
+ * Implements hook_menu().
  */
 function l10n_client_menu() {
   $items = array();
@@ -68,7 +68,7 @@ function l10n_client_menu() {
 }
 
 /**
- * Implement hook_permission().
+ * Implements hook_permission().
  */
 function l10n_client_permission() {
   return array(
@@ -84,7 +84,7 @@ function l10n_client_permission() {
 }
 
 /**
- * Implement hook_theme().
+ * Implements hook_theme().
  */
 function l10n_client_theme($existing, $type, $theme, $path) {
   return array(
@@ -95,7 +95,7 @@ function l10n_client_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implement hook_init().
+ * Implements hook_init().
  */
 function l10n_client_init() {
   global $conf, $language;
@@ -106,13 +106,14 @@ function l10n_client_init() {
     $conf['locale_cache_strings'] = 0;
     // Reset locale cache. If any hook_init() implementation was invoked before
     // this point, that would normally result in all strings loaded into memory.
-    // That would go against our goal of displaying only strings used on the page
-    // and would hang browsers. Drops any string used for the page before this point.
+    // That would go against our goal of displaying only strings used on the
+    // page and would hang browsers. Drops any string used for the page before
+    // this point.
     backdrop_static_reset('locale');
-    backdrop_add_css(backdrop_get_path('module', 'l10n_client') .'/l10n_client.css');
-    backdrop_add_js(backdrop_get_path('module', 'l10n_client') .'/jquery.hotkeys.js');
+    backdrop_add_css(backdrop_get_path('module', 'l10n_client') . '/l10n_client.css');
+    backdrop_add_js(backdrop_get_path('module', 'l10n_client') . '/jquery.hotkeys.js');
     backdrop_add_library('system', 'jquery.cookie');
-    backdrop_add_js(backdrop_get_path('module', 'l10n_client') .'/l10n_client.js');
+    backdrop_add_js(backdrop_get_path('module', 'l10n_client') . '/l10n_client.js');
     // We use textareas to be able to edit long text, which need resizing.
     backdrop_add_library('system', 'backdrop.textarea');
   }
@@ -144,12 +145,13 @@ function l10n_client_access($account = NULL) {
  * This includes custom textgroup support that can be used manually or
  * by other modules.
  *
- * @param $display_translated
- *   Boolean indicating whether translated or untranslated strings are displayed.
- * @param $textgroup
+ * @param bool $display_translated
+ *   Boolean indicating if translated or untranslated strings are displayed.
+ * @param string $textgroup
  *   Internal name of textgroup to use.
- * @param $allow_translation
- *   Boolean indicating whether translation of strings via the l10n_client UI is allowed.
+ * @param bool $allow_translation
+ *   Boolean indicating whether translation of strings via the l10n_client UI
+ *   is allowed.
  */
 function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'default', $allow_translation = TRUE) {
   global $language;
@@ -174,7 +176,8 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
     $query->condition('s.textgroup', $textgroup);
   }
 
-  // For the 'default' textgroup and English language we don't allow translation.
+  // For the 'default' textgroup and English language
+  // we don't allow translation.
   $allow_translation = (($textgroup == 'default') && ($language->langcode == 'en')) ? FALSE : $allow_translation;
 
   $result = $query
@@ -196,16 +199,19 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
     }
   }
   $pager = theme('pager');
-  return $pager . theme('table', array('header' => $header, 'rows' => $table, 'empty' => t('No strings found to translate.'))) . $pager;
+  return $pager . theme('table', array(
+    'header' => $header,
+    'rows' => $table,
+    'empty' => t('No strings found to translate.'),
+  )) . $pager;
 }
 
 /**
- * Implement hook_page_alter().
+ * Implements template_preprocess_page().
  *
  * Output a form to the page and a list of strings used to build the page in
  * JSON form.
  */
-//function l10n_client_page_alter(&$page) {
 function l10n_client_preprocess_page(&$variables) {
   global $conf, $language;
 
@@ -232,10 +238,12 @@ function l10n_client_preprocess_page(&$variables) {
     // Generate HTML wrapper with strings data.
     $l10n_dom = _l10n_client_dom_strings($l10n_strings);
 
-    // UI Labels
-    $string_label = '<h2>'. t('Page Text') .'</h2>';
-    $source_label = '<h2>'. t('Source') .'</h2>';
-    $translation_label = '<h2>'. t('Translation to %language', array('%language' => $language->name)) .'</h2>';
+    // UI Labels.
+    $string_label = '<h2>' . t('Page Text') . '</h2>';
+    $source_label = '<h2>' . t('Source') . '</h2>';
+    $translation_label = '<h2>' . t('Translation to %language', array(
+      '%language' => $language->name,
+    )) . '</h2>';
     $toggle_label = t('Translate Text');
 
     $output = "
@@ -270,12 +278,14 @@ function l10n_client_preprocess_page(&$variables) {
 /**
  * Adds a string to the list onto the l10n_client UI on this page.
  *
- * @param $source
+ * @param mixed $source
  *   Source string or NULL if geting the list of strings specified.
- * @param $translation
+ * @param mixed $translation
  *   Translation string. TRUE if untranslated.
- * @param $textgroup
+ * @param string $textgroup
  *   Text group the string belongs to
+ * @param string $context
+ *   Translation context.
  */
 function l10_client_add_string_to_page($source = NULL, $translation = NULL, $textgroup = 'default', $context = '') {
   static $strings = array();
@@ -292,8 +302,10 @@ function l10_client_add_string_to_page($source = NULL, $translation = NULL, $tex
  * Get the strings to translate for this page.
  *
  * These will be:
- *   - The ones added through l10n_client_add_string_to_page() by this or other modules.
- *   - The strings stored by the locale function (not for for this module's own pages).
+ *   - The ones added through l10n_client_add_string_to_page() by this
+ *     or other modules.
+ *   - The strings stored by the locale function
+ *     (not for this module's own pages).
  */
 function _l10n_client_page_strings() {
   global $language;
@@ -301,7 +313,8 @@ function _l10n_client_page_strings() {
   // Get the page strings stored by this or other modules.
   $strings = l10_client_add_string_to_page();
 
-  // If this is not the module's translation page, merge all strings used on the page.
+  // If this is not the module's translation page,
+  // merge all strings used on the page.
   if (arg(0) != 'locale' && is_array($locale = locale()) && isset($locale[$language->langcode])) {
     // Get the page strings stored by this or other modules.
     $strings += array('default' => array());
@@ -309,7 +322,6 @@ function _l10n_client_page_strings() {
       $strings['default'] += array($context => array());
       $strings['default'][$context] = array_merge($strings['default'][$context], $context_strings);
     }
-
 
     // Also select and add other strings for this path. Other users may have run
     // into these strings for the same page. This might be useful in some cases
@@ -331,7 +343,7 @@ function _l10n_client_page_strings() {
 }
 
 /**
- * Helper function for the string list DOM tree
+ * Helper function for the string list DOM tree.
  */
 function _l10n_client_dom_strings($strings) {
   $output = '';
@@ -347,12 +359,13 @@ function _l10n_client_dom_strings($strings) {
 
 /**
  * String selection has been moved to a jquery-based list.
+ *
  * Todo: make this a themeable function.
  */
 function _l10n_client_string_list($strings) {
   // Build a list of short string excerpts for a selectable list.
   foreach ($strings as $values) {
-    // Add a class to help identify translated strings
+    // Add a class to help identify translated strings.
     if ($values[1] === TRUE) {
       $str_class = 'untranslated';
     }
@@ -386,7 +399,9 @@ function _l10n_client_string_list($strings) {
 }
 
 /**
- * String editing form. Source & selection moved to UI components outside the form.
+ * String editing form.
+ *
+ * Source & selection moved to UI components outside the form.
  * Backed with jquery magic on the client.
  *
  * @todo
@@ -403,7 +418,7 @@ function l10n_client_form($form_id, $strings) {
     '#title' => t('Translation to %language', array('%language' => $language->name)),
     '#title_display' => 'invisible',
     '#type' => 'textarea',
-    '#resizable' => false,
+    '#resizable' => FALSE,
     '#rows' => 6,
     '#attributes' => array('class' => array('translation-target')),
   );
@@ -439,7 +454,7 @@ function l10n_client_form($form_id, $strings) {
 }
 
 /**
- * Search form for string list
+ * Search form for string list.
  */
 function l10n_client_search_form() {
   global $language;
@@ -468,11 +483,20 @@ function l10n_client_save_string() {
   if (l10n_client_access()) {
     if (isset($_POST['source']) && isset($_POST['target']) && !empty($_POST['textgroup']) && !empty($_POST['form_token']) && backdrop_valid_token($_POST['form_token'], 'l10n_client_form')) {
       // Ensure we have this source string before we attempt to save it.
-      $lid = db_query("SELECT lid FROM {locales_source} WHERE source = :source AND context = :context AND textgroup = :textgroup", array(':source' => $_POST['source'], ':context' => $_POST['context'], ':textgroup' => $_POST['textgroup']))->fetchField();
+      $lid = db_query("SELECT lid FROM {locales_source} WHERE source = :source AND context = :context AND textgroup = :textgroup", array(
+        ':source' => $_POST['source'],
+        ':context' => $_POST['context'],
+        ':textgroup' => $_POST['textgroup'],
+      ))->fetchField();
 
       if (!empty($lid)) {
         include_once 'core/includes/gettext.inc';
-        $report = array('skips' => 0, 'additions' => 0, 'updates' => 0, 'deletes' => 0);
+        $report = array(
+          'skips' => 0,
+          'additions' => 0,
+          'updates' => 0,
+          'deletes' => 0,
+        );
         _locale_import_one_string_db($report, $language->langcode, $_POST['context'], $_POST['source'], $_POST['target'], $_POST['textgroup'], NULL, LOCALE_IMPORT_OVERWRITE);
         cache_clear_all('locale:', 'cache', TRUE);
         _locale_invalidate_js($language->langcode);
@@ -498,8 +522,16 @@ function l10n_client_save_string() {
           }
           else {
             $server_url = config_get('l10n_client.settings', 'l10n_client_server');
-            $user_edit_url = url('user/'. $user->uid .'/edit', array('absolute' => TRUE));
-            $message .= theme('l10n_client_message', array('message' => t('You could share your work with !l10n_server if you set your API key at !user_link.', array('!l10n_server' => l($server_url, $server_url), '!user_link' => l($user_edit_url, 'user/'. $user->uid .'/edit'))), 'level' => WATCHDOG_WARNING));
+            $user_edit_url = url('user/' . $user->uid . '/edit', array(
+              'absolute' => TRUE,
+            ));
+            $message .= theme('l10n_client_message', array(
+              'message' => t('You could share your work with !l10n_server if you set your API key at !user_link.', array(
+                '!l10n_server' => l($server_url, $server_url),
+                '!user_link' => l($user_edit_url, 'user/' . $user->uid . '/edit'),
+              )),
+              'level' => WATCHDOG_WARNING,
+            ));
           }
         }
       }
@@ -524,21 +556,19 @@ function l10n_client_save_string() {
 function theme_l10n_client_message($vars) {
   switch ($vars['level']) {
     case WATCHDOG_INFO:
-      return '<div class="l10n-client-feedback message-info">'. $vars['message'] .'</div>';
-      break;
+      return '<div class="l10n-client-feedback message-info">' . $vars['message'] . '</div>';
+
     case WATCHDOG_WARNING:
-      return '<div class="l10n-client-feedback message-warning">'. $vars['message'] .'</div>';
-      break;
+      return '<div class="l10n-client-feedback message-warning">' . $vars['message'] . '</div>';
+
     case WATCHDOG_ERROR:
-      return '<div class="l10n-client-feedback message-error">'. $vars['message'] .'</div>';
-      break;
+      return '<div class="l10n-client-feedback message-error">' . $vars['message'] . '</div>';
+
   }
 }
 
-// -----------------------------------------------------------------------------
-
 /**
- * Implement hook_user_form().
+ * Implements hook_user_form().
  *
  * Set up API key for localization server.
  */
@@ -581,7 +611,7 @@ function l10n_client_form_user_profile_form_alter(&$form, &$form_state) {
 }
 
 /**
- * Implement hook_user_presave().
+ * Implements hook_user_presave().
  *
  * Save the l10n_client_key value in the user object.
  */
@@ -593,12 +623,14 @@ function l10n_client_user_presave(&$edit, $account, $category) {
 }
 
 /**
- * Get user based semi unique token. This will ensure user keys are unique for each client.
+ * Get user based semi unique token.
+ *
+ * This will ensure user keys are unique for each client.
  */
 function l10n_client_user_token($account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
-  return md5('l10n_client'. $account->uid . backdrop_get_private_key());
+  return md5('l10n_client' . $account->uid . backdrop_get_private_key());
 }
 
 /**
@@ -610,30 +642,41 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
   $server_url = config_get('l10n_client.settings', 'l10n_client_server');
 
   $response = xmlrpc(
-    $server_url .'/xmlrpc.php',
-    array('l10n.submit.translation' => array(
-      $langcode,
-      $source,
-      $translation,
-      (int)$server_uid,
-      $user_token,
-      $signature
-    ))
+    $server_url . '/xmlrpc.php',
+    array(
+      'l10n.submit.translation' => array(
+        $langcode,
+        $source,
+        $translation,
+        (int) $server_uid,
+        $user_token,
+        $signature,
+      ),
+    )
   );
 
   if (!empty($response) && isset($response['status'])) {
     if ($response['status']) {
       $message = t('Translation sent and accepted by @server.', array('@server' => $server_url));
       watchdog('l10n_client', 'Translation sent and accepted by @server.', array('@server' => $server_url));
-    } else {
+    }
+    else {
       $message = t('Translation rejected by @server. Reason: %reason', array('%reason' => $response['reason'], '@server' => $server_url));
       watchdog('l10n_client', 'Translation rejected by @server. Reason: %reason', array('%reason' => $response['reason'], '@server' => $server_url), WATCHDOG_WARNING);
     }
     return array($response['status'], $message);
   }
   else {
-    $message = t('The connection with @server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg(), '@server' => $server_url));
-    watchdog('l10n_client', 'The connection with @server failed with the following error: %error_code: %error_message.', array('%error_code' => xmlrpc_errno(), '%error_message' => xmlrpc_error_msg(), '@server' => $server_url), WATCHDOG_ERROR);
+    $message = t('The connection with @server failed with the following error: %error_code: %error_message.', array(
+      '%error_code' => xmlrpc_errno(),
+      '%error_message' => xmlrpc_error_msg(),
+      '@server' => $server_url,
+    ));
+    watchdog('l10n_client', 'The connection with @server failed with the following error: %error_code: %error_message.', array(
+      '%error_code' => xmlrpc_errno(),
+      '%error_message' => xmlrpc_error_msg(),
+      '@server' => $server_url,
+    ), WATCHDOG_ERROR);
     return array(FALSE, $message);
   }
 }
