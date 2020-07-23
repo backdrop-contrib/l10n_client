@@ -110,10 +110,10 @@ function l10n_client_init() {
     // page and would hang browsers. Drops any string used for the page before
     // this point.
     backdrop_static_reset('locale');
-    backdrop_add_css(backdrop_get_path('module', 'l10n_client') . '/l10n_client.css');
-    backdrop_add_js(backdrop_get_path('module', 'l10n_client') . '/jquery.hotkeys.js');
+    backdrop_add_css(backdrop_get_path('module', 'l10n_client') . '/css/l10n_client.css');
+    backdrop_add_js(backdrop_get_path('module', 'l10n_client') . '/js/jquery.hotkeys.js');
     backdrop_add_library('system', 'jquery.cookie');
-    backdrop_add_js(backdrop_get_path('module', 'l10n_client') . '/l10n_client.js');
+    backdrop_add_js(backdrop_get_path('module', 'l10n_client') . '/js/l10n_client.js');
     // We use textareas to be able to edit long text, which need resizing.
     backdrop_add_library('system', 'backdrop.textarea');
   }
