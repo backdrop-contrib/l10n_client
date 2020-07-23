@@ -1,8 +1,7 @@
 name = Localization client
 description = Provides on-page localization
 dependencies[] = locale
-core = 7.x
+backdrop = 1.x
+type = module
 package = Multilingual
 configure = admin/config/regional/translate/client
-
-files[] = l10n_client.test

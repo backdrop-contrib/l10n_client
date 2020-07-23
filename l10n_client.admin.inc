@@ -16,19 +16,22 @@ function l10n_client_settings_form() {
     '#title'         => t('Disable on-page translation on the following system paths'),
     '#type'          => 'textarea',
     '#description'   => t('One per line. Wildcard-enabled. Examples: system/ajax, admin*'),
-    '#default_value' => variable_get('l10n_client_disabled_paths', ''),
+    '#default_value' => config_get('l10n_client.settings', 'l10n_client_disabled_paths'),
   );
   $form['l10n_client_use_server'] = array(
     '#title'         => t('Enable sharing translations with server'),
     '#type'          => 'checkbox',
-    '#default_value' => variable_get('l10n_client_use_server', FALSE),
+    '#disabled'      => TRUE,
+    '#default_value' => config_get('l10n_client.settings', 'l10n_client_use_server'),
   );
   $form['l10n_client_server'] = array(
     '#title'         => t('Address of localization server to use'),
     '#type'          => 'textfield',
+    '#disabled'      => TRUE,
     '#description'   => t('Each translation submission will also be submitted to this server. We suggest you enter <a href="@localize">https://localize.drupal.org/</a> to share with the greater Drupal community. Make sure you set up an API-key in the user account settings for each user that will participate in the translations.', array('@localize' => 'https://localize.drupal.org/')),
-    '#default_value' => variable_get('l10n_client_server', 'https://localize.drupal.org/'),
+    '#default_value' => config_get('l10n_client.settings', 'l10n_client_server'),
   );
+  $form['#config'] = 'l10n_client.settings';
   return system_settings_form($form);
 }
 
@@ -48,7 +51,7 @@ function l10n_client_settings_form_validate($form, &$form_state) {
           form_set_error('l10n_client_server', t('The given server could not handle the v2.0 remote submission API.'));
         }
         else {
-          drupal_set_message(t('Verified that the specified server can handle remote string submissions. Supported languages: %languages.', array('%languages' => $response['languages'])));
+          backdrop_set_message(t('Verified that the specified server can handle remote string submissions. Supported languages: %languages.', array('%languages' => $response['languages'])));
         }
       }
       else {
