@@ -2,14 +2,27 @@
 
 This module helps you fix translations on your site as you see the issues.
 Just by navigating around your pages, you'll be able to fix translations
-and fill in missing ones using the on-page translation editor.
+and fill in missing ones using the **on-page translation editor**.
+It will save you a bunch of clicks.
+
+## Installation
+
+1. Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
+2. Enable two or more languages
+3. Assign the appropriate permissions to the user roles under section "Localization client"
+4. To use the on-page translation form, visit pages in a non-english language
+5. You'll then see a small blue rectangle at the bottom right corner
+6. Click to open the form
+
+## Known Issues
 
 Until https://github.com/backdrop-ops/localize.backdropcms.org/issues/7 is
 addressed, only local translation is possible.
 
-## Installation
+## Issues
 
-Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
+Bugs and Feature requests should be reported in the
+[Issue Queue](https://github.com/backdrop-contrib/l10n_client/issues)
 
 ## Current maintainers
 
