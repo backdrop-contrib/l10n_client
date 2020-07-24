@@ -142,9 +142,6 @@ function l10n_client_access($account = NULL) {
  * just implement the same UI on the page, and do away with these artifical
  * listings, but the current UI works, so we just reuse it this way.
  *
- * This includes custom textgroup support that can be used manually or
- * by other modules.
- *
  * @param bool $display_translated
  *   Boolean indicating if translated or untranslated strings are displayed.
  * @param string $textgroup
@@ -171,9 +168,6 @@ function l10n_client_translate_page($display_translated = FALSE, $textgroup = 'd
   else {
     $header = array(t('Source string'));
     $query->isNull('t.lid');
-  }
-  if (!empty($textgroup)) {
-    $query->condition('s.textgroup', $textgroup);
   }
 
   // For the 'default' textgroup and English language
@@ -328,11 +322,13 @@ function _l10n_client_page_strings() {
     // but will not work reliably in all cases, since strings might have been
     // found on completely different paths first, or on a slightly different
     // path.
-    $result = db_query("SELECT s.source, t.translation, s.textgroup, s.context FROM {locales_source} s LEFT JOIN {locales_target} t ON s.lid = t.lid AND t.language = :language WHERE s.location = :location", array(
+    $result = db_query("SELECT s.source, t.translation, s.context FROM {locales_source} s LEFT JOIN {locales_target} t ON s.lid = t.lid AND t.language = :language WHERE s.location = :location", array(
       ':language' => $language->langcode,
       ':location' => request_uri(),
     ));
     foreach ($result as $data) {
+      // Textgroups have been removed from core.
+      $data->textgroup = 'default';
       if (!array_key_exists($data->source, $strings[$data->textgroup])) {
         $strings[$data->textgroup][$data->context][$data->source] = (empty($data->translation) ? TRUE : $data->translation);
       }
@@ -483,10 +479,9 @@ function l10n_client_save_string() {
   if (l10n_client_access()) {
     if (isset($_POST['source']) && isset($_POST['target']) && !empty($_POST['textgroup']) && !empty($_POST['form_token']) && backdrop_valid_token($_POST['form_token'], 'l10n_client_form')) {
       // Ensure we have this source string before we attempt to save it.
-      $lid = db_query("SELECT lid FROM {locales_source} WHERE source = :source AND context = :context AND textgroup = :textgroup", array(
+      $lid = db_query("SELECT lid FROM {locales_source} WHERE source = :source AND context = :context", array(
         ':source' => $_POST['source'],
         ':context' => $_POST['context'],
-        ':textgroup' => $_POST['textgroup'],
       ))->fetchField();
 
       if (!empty($lid)) {
