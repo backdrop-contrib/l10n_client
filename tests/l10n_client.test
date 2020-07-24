@@ -20,7 +20,7 @@ class L10nSubmitTranslationTestCase extends DrupalWebTestCase {
   /**
    * Test if submitted translations are saved correctly.
    */
-  function testTranslationSubmission() {
+  public function testTranslationSubmission() {
     // Create user that is authorized to use the l10n client.
     $admin_user = $this->backdropCreateUser(array(
       'use on-page translation',
@@ -35,7 +35,7 @@ class L10nSubmitTranslationTestCase extends DrupalWebTestCase {
     $this->backdropGet('de');
     // Parse the form token.
     $token_input = $this->xpath("//form[@id='l10n-client-form']//input[@name='form_token']");
-    $form_token = (string)$token_input[0]['value'];
+    $form_token = (string) $token_input[0]['value'];
 
     // Post data that will be sent to the server.
     $post = array(
@@ -51,7 +51,11 @@ class L10nSubmitTranslationTestCase extends DrupalWebTestCase {
     // Execute the submission using curl.
     // We can not use backdropPost() as this is ajax.
     $action = url('l10n_client/save', array('absolute' => TRUE));
-    $response = $this->curlExec(array(CURLOPT_URL => $action, CURLOPT_POST => TRUE, CURLOPT_POSTFIELDS => $post));
+    $response = $this->curlExec(array(
+      CURLOPT_URL => $action,
+      CURLOPT_POST => TRUE,
+      CURLOPT_POSTFIELDS => $post,
+    ));
     $this->refreshVariables();
 
     // Get id of the source string.
