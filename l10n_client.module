@@ -76,10 +76,12 @@ function l10n_client_permission() {
       'title' => t('Use on-page translation'),
       'description' => t('Makes it possible to translate the Drupal interface on-page.'),
     ),
+    /*
     'submit translations to localization server' => array(
       'title' => t('Submit translations to localization server'),
       'description' => t('Allows users to submit translations to a remote localization server.'),
     ),
+    */
   );
 }
 
