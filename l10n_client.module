@@ -571,7 +571,10 @@ function theme_l10n_client_message($vars) {
  * Implements hook_user_form().
  *
  * Set up API key for localization server.
+ * Postponed.
+ * @see https://github.com/backdrop-ops/localize.backdropcms.org/issues/7
  */
+/*
 function l10n_client_form_user_profile_form_alter(&$form, &$form_state) {
   if ($form['#user_category'] == 'account') {
     $items = array();
@@ -609,18 +612,23 @@ function l10n_client_form_user_profile_form_alter(&$form, &$form_state) {
     }
   }
 }
+*/
 
 /**
  * Implements hook_user_presave().
  *
  * Save the l10n_client_key value in the user object.
+ * Postponed.
+ * @see https://github.com/backdrop-ops/localize.backdropcms.org/issues/7
  */
+/*
 function l10n_client_user_presave(&$edit, $account, $category) {
   if (isset($edit['l10n_client_key'])) {
     $edit['data']['l10n_client_key'] = trim($edit['l10n_client_key']);
   }
   $edit['data']['l10n_client_disabled'] = !empty($edit['l10n_client_disabled']);
 }
+*/
 
 /**
  * Get user based semi unique token.
@@ -683,7 +691,11 @@ function l10n_client_submit_translation($langcode, $source, $translation, $user_
 
 /**
  * Implements hook_field_extra_fields().
+ *
+ * Postponed.
+ * @see https://github.com/backdrop-ops/localize.backdropcms.org/issues/7
  */
+/*
 function l10n_client_field_extra_fields() {
   $extra['user']['user']['form']['l10nclient'] = array(
     'label' => 'Localization client',
@@ -692,3 +704,4 @@ function l10n_client_field_extra_fields() {
   );
   return $extra;
 }
+*/
