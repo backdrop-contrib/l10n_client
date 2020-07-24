@@ -1,0 +1,5 @@
+[L10nSubmitTranslationTestCase]
+name = Localization client test
+description = Test the submission of translation.
+group = Localization client
+file = l10n_client.test
