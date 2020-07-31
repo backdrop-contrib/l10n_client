@@ -279,7 +279,7 @@ function l10n_client_preprocess_page(&$variables) {
  * @param mixed $translation
  *   Translation string. TRUE if untranslated.
  * @param string $textgroup
- *   Text group the string belongs to
+ *   Text group the string belongs to.
  * @param string $context
  *   Translation context.
  */
@@ -638,6 +638,7 @@ function l10n_client_user_token($account = NULL) {
  * Submit translation to the server.
  *
  * Note: this will need a rewrite.
+ *
  * @see https://github.com/backdrop-contrib/l10n_client/issues/2
  */
 function l10n_client_submit_translation($langcode, $source, $translation, $user_key, $user_token) {
