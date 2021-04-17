@@ -3,6 +3,12 @@
  * overflows from occurring in an unnamed browser that can't decide
  * how it wants to round.
  */
+/* Prevent covering bottom content. */
+body.l10n-client.toggle-expanded .layout {
+  padding-bottom: 350px !important;
+  /* Above would not work in Basis because of flex column style. */
+  height: auto;
+}
 
 /* l10n_client container */
 #l10n-client {
