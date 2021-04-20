@@ -226,6 +226,8 @@ body.l10n-client.toggle-expanded .layout {
 #l10n-client-form .form-submit {
   margin-top: 0;
   line-height: 2rem;
+  text-transform: none;
+  padding: 0 15px;
 }
 
 #l10n-client-data {
