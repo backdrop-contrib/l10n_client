@@ -40,16 +40,25 @@
     toggle: function (state) {
       var $l10nClient = Backdrop.l10nClient.$l10nClient;
       var $clientWrapper = $('#l10n-client-string-select, #l10n-client-string-editor, #l10n-client .labels .label');
+      // Custom cookie implementation, as core $.cookie causes console nagging.
+      // @todo Switch back to core API, as soon as it gets fixed.
+      var expireDate = new Date();
+      expireDate.setDate(expireDate.getDate() + 7);
+      var cookieDefaultOptions = [
+        'expires=' + expireDate.toUTCString(),
+        'path=/',
+        'samesite=strict'
+      ].join('; ');
       if (!!state == true) {
         $clientWrapper.show();
         $l10nClient.removeClass('l10n-client-minimized').addClass('l10n-client-maximized').find('.labels .toggle').text('x');
         $('body').addClass('toggle-expanded');
-        $.cookie('Backdrop_l10n_client', '1', {expires: 7, path: '/'});
+        document.cookie = 'Backdrop_l10n_client=1; ' + cookieDefaultOptions;
       } else {
         $clientWrapper.hide();
         $l10nClient.removeClass('l10n-client-maximized').addClass('l10n-client-minimized').find('.labels .toggle').text(Backdrop.t('Translate Text'));
         $('body').removeClass('toggle-expanded');
-        $.cookie('Backdrop_l10n_client', '0', {expires: 7, path: '/'});
+        document.cookie = 'Backdrop_l10n_client=0; ' + cookieDefaultOptions;
       }
     },
 
