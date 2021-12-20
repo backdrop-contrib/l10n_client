@@ -2,6 +2,20 @@
 
 // Store all l10n_client related data + methods in its own object
   Backdrop.l10nClient = {
+    init: function() {
+      // Add event listener to storage events in other tabs on the same domain.
+      window.addEventListener('storage', function (event) {
+        if (event.key === 'Backdrop.l10n_client.expanded') {
+          if (event.newValue === '1') {
+            Backdrop.l10nClient.toggle(1);
+          }
+          else {
+            Backdrop.l10nClient.toggle(0);
+          }
+        }
+      });
+    },
+
     // Set "selected" string to unselected, i.e. -1
     selected: -1,
 
@@ -40,25 +54,16 @@
     toggle: function (state) {
       var $l10nClient = Backdrop.l10nClient.$l10nClient;
       var $clientWrapper = $('#l10n-client-string-select, #l10n-client-string-editor, #l10n-client .labels .label');
-      // Custom cookie implementation, as core $.cookie causes console nagging.
-      // @todo Switch back to core API, as soon as it gets fixed.
-      var expireDate = new Date();
-      expireDate.setDate(expireDate.getDate() + 7);
-      var cookieDefaultOptions = [
-        'expires=' + expireDate.toUTCString(),
-        'path=/',
-        'samesite=strict'
-      ].join('; ');
       if (!!state == true) {
         $clientWrapper.show();
         $l10nClient.removeClass('l10n-client-minimized').addClass('l10n-client-maximized').find('.labels .toggle').text('x');
         $('body').addClass('toggle-expanded');
-        document.cookie = 'Backdrop_l10n_client=1; ' + cookieDefaultOptions;
+        localStorage.setItem('Backdrop.l10n_client.expanded', '1');
       } else {
         $clientWrapper.hide();
         $l10nClient.removeClass('l10n-client-maximized').addClass('l10n-client-minimized').find('.labels .toggle').text(Backdrop.t('Translate Text'));
         $('body').removeClass('toggle-expanded');
-        document.cookie = 'Backdrop_l10n_client=0; ' + cookieDefaultOptions;
+        localStorage.removeItem('Backdrop.l10n_client.expanded');
       }
     },
 
@@ -87,6 +92,9 @@
     }
   };
 
+  // Initialize the client event listener for storage events.
+  Backdrop.l10nClient.init();
+
   // Attaches the localization editor behavior to all required fields.
   Backdrop.behaviors.l10nClient = {
     attach: function (context) {
@@ -97,9 +105,12 @@
         var $stringEditor = $('#l10n-client-string-editor');
         var $stringEditorSoruceText = $stringEditor.find('.source-text');
         var $stringSelect = $('#l10n-client-string-select');
-        var cookie = parseInt($.cookie('Backdrop_l10n_client'), 2);
         Backdrop.l10nClient.$l10nClient = $l10nClient;
-        Backdrop.l10nClient.toggle(isNaN(cookie) ? 0 : cookie);
+        var storageExpanded = 0;
+        if (localStorage.getItem('Backdrop.l10n_client.expanded') !== null) {
+          storageExpanded = 1;
+        }
+        Backdrop.l10nClient.toggle(storageExpanded);
 
         // If the selection changes, copy string values to the source and target fields.
         // Add class to indicate selected string in list widget.
