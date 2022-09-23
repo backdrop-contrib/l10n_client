@@ -487,7 +487,11 @@ function l10n_client_save_string() {
       ))->fetchField();
 
       if (!empty($lid)) {
-        include_once 'core/includes/gettext.inc';
+        if (!defined('LOCALE_IMPORT_OVERWRITE')) {
+          // This file is only loaded by default on multilingual sites.
+          include_once BACKDROP_ROOT . '/core/includes/locale.inc';
+        }
+        include_once BACKDROP_ROOT . '/core/includes/gettext.inc';
         $report = array(
           'skips' => 0,
           'additions' => 0,
