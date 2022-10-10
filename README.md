@@ -5,6 +5,8 @@ Just by navigating around your pages, you'll be able to fix translations
 and fill in missing ones using the **on-page translation editor**.
 It will save you a bunch of clicks.
 
+![Screenshot](https://raw.githubusercontent.com/backdrop-contrib/l10n_client/1.x-1.x/screenshots/l10n-client.webp)
+
 ## Installation
 
 1. Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
