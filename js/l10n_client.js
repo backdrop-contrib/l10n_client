@@ -114,7 +114,7 @@
 
         // If the selection changes, copy string values to the source and target fields.
         // Add class to indicate selected string in list widget.
-        $stringSelect.find('li').click(function () {
+        $stringSelect.find('li').on('click', function () {
           var $this = $(this);
           var $lis = $stringSelect.find('li');
           var index = $lis.index(this);
@@ -133,18 +133,18 @@
         });
 
         // When l10n_client window is clicked, toggle based on current state.
-        $l10nClient.find('.labels .toggle').click(function () {
+        $l10nClient.find('.labels .toggle').on('click', function () {
           Backdrop.l10nClient.toggle($l10nClient.is('.l10n-client-minimized'));
         });
 
         // Copy source text to translation field on button click.
-        $l10nClientForm.find('.edit-copy').click(function () {
+        $l10nClientForm.find('.edit-copy').on('click', function () {
           $l10nClientForm.find('.translation-target').val($stringEditorSoruceText.text());
           return false;
         });
 
         // Clear translation field on button click.
-        $l10nClientForm.find('.edit-clear').click(function () {
+        $l10nClientForm.find('.edit-clear').on('click', function () {
           $l10nClientForm.find('.translation-target').val('');
           return false;
         });
@@ -160,18 +160,18 @@
         }
 
         // Custom listener for l10n_client livesearch
-        $l10nClient.find('.string-search').keyup(function () {
+        $l10nClient.find('.string-search').on('keyup', function () {
           Backdrop.l10nClient.filter($l10nClient.find('.string-search').val());
         });
 
         // Clear search
-        $l10nClient.find('#l10n-client-search-filter-clear').click(function () {
+        $l10nClient.find('#l10n-client-search-filter-clear').on('click', function () {
           Backdrop.l10nClient.filter(false);
           return false;
         });
 
         // Send AJAX POST data on form submit.
-        $l10nClientForm.submit(function () {
+        $l10nClientForm.on('submit', function () {
           var $this = $(this);
 
           // Prevent submit empty strings.
